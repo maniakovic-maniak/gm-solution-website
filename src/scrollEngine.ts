@@ -15,10 +15,14 @@ const MAX_STEP_PER_EVENT_FRACTION = 1.0; // clamp: a single wheel event can move
 // cause a skip even if it's still technically decaying.
 const LOCK_COOLDOWN_MS = 320;
 
+export interface ScrollEngineControls {
+  goToSlot: (index: number) => void;
+}
+
 export function setupScrollEngine(
   slotCount: number,
   onProgress: (progress: number, locked: boolean, lockedSlot: number) => void
-) {
+): ScrollEngineControls {
   const step = 1 / (slotCount - 1);
   const maxStepDelta = step * MAX_STEP_PER_EVENT_FRACTION;
 
@@ -99,4 +103,14 @@ export function setupScrollEngine(
       commit(gsap.utils.clamp(0, 1, proposed));
     },
   });
+
+  function goToSlot(index: number) {
+    const clamped = Math.max(0, Math.min(slotCount - 1, index));
+    lockedSlot = clamped;
+    locked = true;
+    lockedAt = Date.now();
+    tweenTo(clamped * step);
+  }
+
+  return { goToSlot };
 }

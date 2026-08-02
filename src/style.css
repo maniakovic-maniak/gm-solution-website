@@ -101,3 +101,107 @@ section h1, section h2 {
   font-size: 0.9rem;
   backdrop-filter: blur(8px);
 }
+
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: rgba(5, 7, 13, 0.45);
+  border-bottom: 1px solid rgba(233, 237, 245, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-family: "SF Mono", "Courier New", monospace;
+}
+
+.site-nav__wordmark {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #eef1f8;
+}
+
+.site-nav__links {
+  display: flex;
+}
+
+.site-nav__link {
+  position: relative;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  border-left: 1px solid rgba(233, 237, 245, 0.12);
+  color: #a9b1c4;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  padding: 0 1.1rem;
+  cursor: pointer;
+  overflow: hidden;
+  height: 1.8em;
+}
+
+.site-nav__link:last-child {
+  border-right: 1px solid rgba(233, 237, 245, 0.12);
+}
+
+.site-nav__link-roll {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.site-nav__link:hover .site-nav__link-roll {
+  transform: translateY(-1.8em);
+}
+
+.site-nav__link-label {
+  display: block;
+  height: 1.8em;
+  line-height: 1.8em;
+  white-space: nowrap;
+}
+
+.site-nav__link.is-active {
+  color: #eef1f8;
+}
+
+/* Active indicator: a small bracket pair either side of the label, nodding
+   at a referenced formula cell rather than a generic pill/underline. */
+.site-nav__link.is-active::before,
+.site-nav__link.is-active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 1.3em;
+  border: 1px solid #eef1f8;
+  transform: translateY(-50%);
+  opacity: 0.8;
+}
+
+.site-nav__link.is-active::before {
+  left: 2px;
+  border-right: none;
+}
+
+.site-nav__link.is-active::after {
+  right: 2px;
+  border-left: none;
+}
+
+@media (max-width: 640px) {
+  .site-nav {
+    padding: 0.85rem 1.1rem;
+  }
+  .site-nav__link {
+    font-size: 0.68rem;
+    padding: 0.35rem 0.6rem;
+  }
+}

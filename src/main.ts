@@ -3,6 +3,7 @@ import { Galaxy } from './galaxy';
 import { OverlaySystem } from './overlaySystem';
 import { setupScrollEngine } from './scrollEngine';
 import { setupMotionInput } from './motion';
+import { setupNav } from './nav';
 
 function isLowPower(): boolean {
   const cores = navigator.hardwareConcurrency || 4;
@@ -36,10 +37,21 @@ try {
   }
 
   const sectionCount = document.querySelectorAll('[data-section]').length;
-  setupScrollEngine(sectionCount, (progress, locked, lockedSlot) => {
+
+  // nav is created after the scroll engine (it needs the engine's controls
+  // to wire click-to-jump), but the engine fires its first progress update
+  // synchronously during setup, before nav exists yet -- so the callback
+  // guards on a mutable holder instead of closing over `nav` directly.
+  let nav: ReturnType<typeof setupNav> | null = null;
+
+  const controls = setupScrollEngine(sectionCount, (progress, locked, lockedSlot) => {
     galaxy.setScrollProgress(progress);
     overlay.setProgress(progress, locked, lockedSlot);
+    nav?.setActive(lockedSlot);
   });
+
+  nav = setupNav(controls);
+  nav.setActive(0);
 
   setupMotionInput((nx, ny) => galaxy.setMouseTarget(nx, ny));
 
