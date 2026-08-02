@@ -4,6 +4,7 @@ import { OverlaySystem } from './overlaySystem';
 import { setupScrollEngine } from './scrollEngine';
 import { setupMotionInput } from './motion';
 import { setupNav } from './nav';
+import { setupFloatingCta } from './floatingCta';
 
 function isLowPower(): boolean {
   const cores = navigator.hardwareConcurrency || 4;
@@ -52,6 +53,7 @@ try {
 
   nav = setupNav(controls);
   nav.setActive(0);
+  setupFloatingCta();
 
   setupMotionInput((nx, ny) => galaxy.setMouseTarget(nx, ny));
 
