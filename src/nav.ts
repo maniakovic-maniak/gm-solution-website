@@ -18,9 +18,10 @@ export function setupNav(controls: ScrollEngineControls) {
   const nav = document.createElement('nav');
   nav.className = 'site-nav';
 
-  const wordmark = document.createElement('div');
+  const wordmark = document.createElement('img');
   wordmark.className = 'site-nav__wordmark';
-  wordmark.textContent = 'GM-Solutions';
+  wordmark.src = '/logo.png';
+  wordmark.alt = 'GM-Solutions';
   nav.appendChild(wordmark);
 
   const list = document.createElement('div');

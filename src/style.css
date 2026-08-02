@@ -111,7 +111,7 @@ section h1, section h2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 2rem;
+  padding: 0.5rem 2rem;
   background: rgba(5, 7, 13, 0.45);
   border-bottom: 1px solid rgba(233, 237, 245, 0.1);
   backdrop-filter: blur(8px);
@@ -120,10 +120,9 @@ section h1, section h2 {
 }
 
 .site-nav__wordmark {
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #eef1f8;
+  height: 70px;
+  width: auto;
+  display: block;
 }
 
 .site-nav__links {
