@@ -112,5 +112,15 @@ export function setupScrollEngine(
     tweenTo(clamped * step);
   }
 
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+      e.preventDefault();
+      goToSlot(lockedSlot + 1);
+    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      goToSlot(lockedSlot - 1);
+    }
+  });
+
   return { goToSlot };
 }

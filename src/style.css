@@ -204,3 +204,82 @@ section h1, section h2 {
     padding: 0.35rem 0.6rem;
   }
 }
+
+/* Hamburger toggle -- hidden on desktop, shown below the mobile breakpoint */
+.site-nav__hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.site-nav__hamburger-bar {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: #eef1f8;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.site-nav__hamburger.is-open .site-nav__hamburger-bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.site-nav__hamburger.is-open .site-nav__hamburger-bar:nth-child(2) {
+  opacity: 0;
+}
+.site-nav__hamburger.is-open .site-nav__hamburger-bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Full-screen mobile menu overlay */
+.site-nav__mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  background: rgba(5, 7, 13, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.site-nav__mobile-menu.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.site-nav__mobile-link {
+  background: transparent;
+  border: none;
+  color: #a9b1c4;
+  font-family: "SF Mono", "Courier New", monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.site-nav__mobile-link.is-active {
+  color: #5DCAA5;
+}
+
+/* Breakpoint: swap desktop links for hamburger below 768px */
+@media (max-width: 768px) {
+  .site-nav__links {
+    display: none;
+  }
+  .site-nav__hamburger {
+    display: flex;
+  }
+}
