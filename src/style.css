@@ -3,9 +3,17 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  background: #05070d;
   color: #eef1f8;
   font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
+  background-color: #05050d;
+  background-image:
+    linear-gradient(120deg, transparent 28%, rgba(76, 58, 140, 0.22) 46%, rgba(45, 60, 130, 0.18) 56%, transparent 74%),
+    radial-gradient(ellipse 85vw 55vh at 12% 8%, rgba(90, 70, 160, 0.16), transparent 65%),
+    radial-gradient(ellipse 75vw 75vh at 92% 82%, rgba(55, 65, 150, 0.18), transparent 65%),
+    radial-gradient(ellipse 95vw 45vh at 55% 42%, rgba(100, 80, 170, 0.1), transparent 70%),
+    radial-gradient(ellipse 65vw 65vh at 35% 100%, rgba(70, 55, 130, 0.12), transparent 60%);
+  background-attachment: fixed;
+  background-size: 100% 100%;
 }
 
 #galaxy-canvas {
@@ -120,7 +128,7 @@ section h1, section h2 {
 }
 
 .site-nav__wordmark {
-  height: 70px;
+  height: 50px;
   width: auto;
   display: block;
 }
@@ -180,9 +188,9 @@ section h1, section h2 {
   top: 50%;
   width: 6px;
   height: 1.3em;
-  border: 1px solid #eef1f8;
+  border: 1px solid #5DCAA5;
   transform: translateY(-50%);
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .site-nav__link.is-active::before {

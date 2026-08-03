@@ -6,7 +6,7 @@ const PARTICLE_COUNT_LOW_POWER = 700;
 const TUNNEL_DEPTH = 2400;
 const TUNNEL_RADIUS = 480;
 const RECYCLE_BUFFER = 80;
-const ATLAS_SIZE = 512; // must match GRID_COLS * CELL_PX in glyphAtlas.ts
+const ATLAS_SIZE = 640; // must match GRID_COLS * CELL_PX in glyphAtlas.ts
 
 const vertexShader = /* glsl */ `
   precision highp float;
