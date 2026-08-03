@@ -1,4 +1,5 @@
 import { gsap } from 'gsap';
+import { setupDemoModal } from './demoModal';
 
 const MAGNETIC_STRENGTH = 0.21; // zone padding is applied via CSS (.floating-cta-zone)
 
@@ -32,9 +33,6 @@ export function setupFloatingCta() {
     </span>
   `;
 
-  // Hover behavior: rotate to point down immediately, then after a short
-  // sustained hover, pulse it a few times (a gentle "pull down" nudge)
-  // rather than looping indefinitely for as long as the cursor stays.
   const arrowEl = iconButton.querySelector('.floating-cta-icon__arrow') as HTMLElement;
   let pullTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -62,9 +60,6 @@ export function setupFloatingCta() {
   zone.appendChild(group);
   document.body.appendChild(zone);
 
-  // Magnetic pull: the whole group translates toward the cursor while it's
-  // within the padded zone, eased via GSAP's quickTo, springing back to
-  // (0,0) once the cursor leaves.
   const moveX = gsap.quickTo(group, 'x', { duration: 0.4, ease: 'power3' });
   const moveY = gsap.quickTo(group, 'y', { duration: 0.4, ease: 'power3' });
 
@@ -81,33 +76,7 @@ export function setupFloatingCta() {
     moveY(0);
   });
 
-  const backdrop = document.createElement('div');
-  backdrop.className = 'demo-modal-backdrop';
-  backdrop.innerHTML = `
-    <div class="demo-modal" role="dialog" aria-modal="true" aria-label="Request a demo">
-      <button class="demo-modal__close" type="button" aria-label="Close">&times;</button>
-      <h2>Request a Demo</h2>
-      <p class="demo-modal__placeholder">Form coming soon — this is a placeholder.</p>
-    </div>
-  `;
-  document.body.appendChild(backdrop);
-
-  const closeBtn = backdrop.querySelector('.demo-modal__close') as HTMLButtonElement;
-
-  function openModal() {
-    backdrop.classList.add('is-open');
-  }
-  function closeModal() {
-    backdrop.classList.remove('is-open');
-  }
-
-  button.addEventListener('click', openModal);
-  iconButton.addEventListener('click', openModal);
-  closeBtn.addEventListener('click', closeModal);
-  backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) closeModal();
-  });
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
-  });
+  const modal = setupDemoModal();
+  button.addEventListener('click', modal.open);
+  iconButton.addEventListener('click', modal.open);
 }
