@@ -2,7 +2,15 @@ import * as THREE from 'three';
 import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
 const TARGET_WORLD_WIDTH = 300;   // world-space width the card is scaled to (matches its 560 CSS px)
-const CARD_CSS_WIDTH = 560;
+const MOBILE_BREAKPOINT_PX = 640;
+const CARD_CSS_WIDTH_DESKTOP = 560;
+const CARD_CSS_WIDTH_MOBILE = 320; // narrower on mobile so text wraps into a portrait
+                                    // shape (more lines, taller card) rather than
+                                    // just scaling the same wide layout down
+
+function currentCardCssWidth(): number {
+  return window.innerWidth < MOBILE_BREAKPOINT_PX ? CARD_CSS_WIDTH_MOBILE : CARD_CSS_WIDTH_DESKTOP;
+}
 const ENTRY_START_DISTANCE = 30;  // very close to camera — huge, heavily blurred "swooping past"
 const DEPART_END_DISTANCE = 950;  // far enough to be gone/faded
 const SETTLE_WIDTH_FRACTION = 0.7; // card should read as 70% of viewport width once settled
@@ -42,6 +50,8 @@ export class OverlaySystem {
 
     window.addEventListener('resize', () => {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
+      const rescale = TARGET_WORLD_WIDTH / currentCardCssWidth();
+      this.cards.forEach((card) => card.object.scale.setScalar(rescale));
     });
 
     const sections = document.querySelectorAll<HTMLElement>('[data-section]');
@@ -52,7 +62,7 @@ export class OverlaySystem {
       if (!cardEl) return;
 
       const object = new CSS3DObject(cardEl);
-      const baseScale = TARGET_WORLD_WIDTH / CARD_CSS_WIDTH;
+      const baseScale = TARGET_WORLD_WIDTH / currentCardCssWidth();
       object.scale.setScalar(baseScale);
       this.scene.add(object);
 
