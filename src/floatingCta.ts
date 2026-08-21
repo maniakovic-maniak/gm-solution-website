@@ -15,15 +15,15 @@ export function setupFloatingCta() {
   button.type = 'button';
   button.innerHTML = `
     <span class="floating-cta__roll">
-      <span class="floating-cta__label">Request a Demo</span>
-      <span class="floating-cta__label">Request a Demo</span>
+      <span class="floating-cta__label">Get Started</span>
+      <span class="floating-cta__label">Get Started</span>
     </span>
   `;
 
   const iconButton = document.createElement('button');
   iconButton.className = 'floating-cta-icon';
   iconButton.type = 'button';
-  iconButton.setAttribute('aria-label', 'Request a demo');
+  iconButton.setAttribute('aria-label', 'Get started');
   iconButton.innerHTML = `
     <span class="floating-cta-icon__arrow">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
