@@ -5,6 +5,7 @@ import { setupScrollEngine } from './scrollEngine';
 import { setupMotionInput } from './motion';
 import { setupNav } from './nav';
 import { setupFloatingCta } from './floatingCta';
+import { setupMiniCarousels } from './miniCarousel';
 
 function isLowPower(): boolean {
   const cores = navigator.hardwareConcurrency || 4;
@@ -54,6 +55,7 @@ try {
   nav = setupNav(controls);
   nav.setActive(0);
   setupFloatingCta();
+  setupMiniCarousels();
 
   setupMotionInput((nx, ny) => galaxy.setMouseTarget(nx, ny));
 

@@ -63,7 +63,9 @@ export function setupScrollEngine(
     target: window,
     type: 'wheel,touch,pointer',
     wheelSpeed: 1,
+    ignore: '.demo-modal-backdrop',
     onChange: (self) => {
+      if (document.body.classList.contains('modal-open')) return;
       const rawDelta = self.deltaY;
 
       if (locked) {
@@ -113,6 +115,7 @@ export function setupScrollEngine(
   }
 
   window.addEventListener('keydown', (e) => {
+    if (document.body.classList.contains('modal-open')) return;
     if (e.key === 'ArrowDown' || e.key === 'PageDown') {
       e.preventDefault();
       goToSlot(lockedSlot + 1);
