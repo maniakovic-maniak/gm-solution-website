@@ -1,8 +1,17 @@
 const ALLOWED_EXTENSIONS = ['.xlsx', '.xlsm', '.xlsb', '.xls'];
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+// Per the confirmed architecture assumption in the Phase B spec — this
+// form calls the fm-validator VPS directly, not a separate website
+// backend. Requires the website's real domain to be added to
+// fm-validator's ALLOWED_ORIGIN before this will work cross-origin.
+const API_BASE = 'https://gm-audit.com';
+
+function formatCents(cents: number): string {
+  return `AU$${(cents / 100).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
 function isValidName(v: string): boolean {
-  return /^[A-Za-z\s'-]+$/.test(v.trim()) && v.trim().length > 0;
+  return /^[\p{L}\s'-]+$/u.test(v.trim()) && v.trim().length > 0;
 }
 function isNotEmpty(v: string): boolean {
   return v.trim().length > 0;
@@ -124,19 +133,19 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
         <div class="subform-summary-row subform-uf-expand">
           <span>Unique formulas</span>
           <span class="subform-val">
-            <span class="subform-uf-count">524</span>
+            <span class="subform-uf-count">—</span>
             <svg class="subform-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
           </span>
         </div>
         <div class="subform-uf-breakdown">
-          <div class="subform-summary-row"><span>Low</span><span class="subform-val">466</span></div>
-          <div class="subform-summary-row"><span>Moderate</span><span class="subform-val">52</span></div>
-          <div class="subform-summary-row"><span>High</span><span class="subform-val">4</span></div>
-          <div class="subform-summary-row"><span>Critical</span><span class="subform-val">2</span></div>
+          <div class="subform-summary-row"><span>Low</span><span class="subform-val subform-band-low">—</span></div>
+          <div class="subform-summary-row"><span>Moderate</span><span class="subform-val subform-band-moderate">—</span></div>
+          <div class="subform-summary-row"><span>High</span><span class="subform-val subform-band-high">—</span></div>
+          <div class="subform-summary-row"><span>Critical</span><span class="subform-val subform-band-critical">—</span></div>
         </div>
-        <div class="subform-summary-row"><span>Subtotal</span><span class="subform-val">AU$1,220.50</span></div>
-        <div class="subform-summary-row"><span>GST</span><span class="subform-val">AU$122.00</span></div>
-        <div class="subform-summary-row subform-summary-row--total"><span>Total</span><span class="subform-val">AU$1,342.50</span></div>
+        <div class="subform-summary-row"><span>Subtotal</span><span class="subform-val subform-subtotal">—</span></div>
+        <div class="subform-summary-row"><span>GST</span><span class="subform-val subform-gst">—</span></div>
+        <div class="subform-summary-row subform-summary-row--total"><span>Total</span><span class="subform-val subform-grand-total">—</span></div>
       </div>
 
       <div class="subform-tcs-row">
@@ -154,7 +163,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
       </button>
     </div>
 
-    <p class="subform-success" style="display:none">Thanks — your model is on its way. We'll email your Order ID and next steps shortly.</p>
+    <p class="subform-success" style="display:none">Thanks — your order <strong class="subform-order-id"></strong> is on its way. We'll email your Order ID and next steps shortly.</p>
   `;
 
   const dropzone = page.querySelector('.subform-dropzone') as HTMLElement;
@@ -168,6 +177,14 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   const summary = page.querySelector('.subform-summary') as HTMLElement;
   const ufExpand = page.querySelector('.subform-uf-expand') as HTMLElement;
   const ufBreakdown = page.querySelector('.subform-uf-breakdown') as HTMLElement;
+  const ufCount = page.querySelector('.subform-uf-count') as HTMLElement;
+  const bandLow = page.querySelector('.subform-band-low') as HTMLElement;
+  const bandModerate = page.querySelector('.subform-band-moderate') as HTMLElement;
+  const bandHigh = page.querySelector('.subform-band-high') as HTMLElement;
+  const bandCritical = page.querySelector('.subform-band-critical') as HTMLElement;
+  const subtotalEl = page.querySelector('.subform-subtotal') as HTMLElement;
+  const gstEl = page.querySelector('.subform-gst') as HTMLElement;
+  const grandTotalEl = page.querySelector('.subform-grand-total') as HTMLElement;
 
   const nameInput = page.querySelector('#sub-name') as HTMLInputElement;
   const companyInput = page.querySelector('#sub-company') as HTMLInputElement;
@@ -181,8 +198,11 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   const tcsLink = page.querySelector('.subform-tcs-link') as HTMLElement;
   const submitBtn = page.querySelector('.subform-submit') as HTMLButtonElement;
   const successMsg = page.querySelector('.subform-success') as HTMLElement;
+  const orderIdEl = page.querySelector('.subform-order-id') as HTMLElement;
 
   let fileVerified = false;
+  let storedAs: string | null = null;
+  let quotedGrandTotal: number | null = null;
 
   const loadingPopup = document.createElement('div');
   loadingPopup.className = 'popup-overlay';
@@ -295,7 +315,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
     });
   });
 
-  function handleFile(file: File) {
+  async function handleFile(file: File) {
     const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
       showError("This file type isn't supported. Please upload an .xlsx, .xlsm, .xlsb, or .xls file.");
@@ -308,10 +328,35 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
 
     showPopup(loadingPopup);
 
-    // Simulated Instance 1 check + F-score estimation -- placeholder until
-    // the real pipeline is wired in. Timing and the numbers shown below
-    // stand in for that real processing step.
-    setTimeout(() => {
+    try {
+      // ── Step 1: real integrity check (Instance 2) — fast, no pipeline ──
+      const formData = new FormData();
+      formData.append('file', file);
+      const verifyRes = await fetch(`${API_BASE}/api/verify-upload`, { method: 'POST', body: formData });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyData.passed) {
+        hidePopups();
+        showError(verifyData.message || 'This file could not be verified. Please check it and try again.');
+        return;
+      }
+      storedAs = verifyData.storedAs;
+
+      // ── Step 2: real pricing, reusing the already-staged file ──
+      const priceRes = await fetch(`${API_BASE}/api/unique-formulas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storedAs }),
+      });
+      const priceData = await priceRes.json();
+
+      if (priceData.status !== 'success') {
+        hidePopups();
+        showError(priceData.message || 'Could not estimate pricing for this file. Please try again.');
+        storedAs = null;
+        return;
+      }
+
       hidePopups();
       filePillName.textContent = file.name;
       filePillSize.textContent = formatFileSize(file.size);
@@ -319,13 +364,30 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
       dropzone.style.display = 'none';
       mobileUploadBtn.style.display = 'none';
       summary.style.display = 'block';
+
+      ufCount.textContent = String(priceData.uniqueFormulaTotal);
+      bandLow.textContent = String(priceData.fscoreDist.Low);
+      bandModerate.textContent = String(priceData.fscoreDist.Moderate);
+      bandHigh.textContent = String(priceData.fscoreDist.High);
+      bandCritical.textContent = String(priceData.fscoreDist.Critical);
+      subtotalEl.textContent = formatCents(priceData.priceTotal);
+      gstEl.textContent = formatCents(priceData.gstTotal);
+      grandTotalEl.textContent = formatCents(priceData.grandTotal);
+      quotedGrandTotal = priceData.grandTotal;
+
       fileVerified = true;
       checkReady();
-    }, 1400);
+    } catch (err) {
+      hidePopups();
+      showError('Could not connect to the server. Please check your connection and try again.');
+      storedAs = null;
+    }
   }
 
   function resetFile() {
     fileVerified = false;
+    storedAs = null;
+    quotedGrandTotal = null;
     filePill.style.display = 'none';
     dropzone.style.display = '';
     mobileUploadBtn.style.display = '';
@@ -362,18 +424,53 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
     ufBreakdown.classList.toggle('is-open');
   });
 
-  submitBtn.addEventListener('click', () => {
+  submitBtn.addEventListener('click', async () => {
     if (submitBtn.disabled) return;
+    if (!storedAs || quotedGrandTotal === null) {
+      showError('Please upload a file before submitting.');
+      return;
+    }
     showPopup(loadingPopup);
-    // Placeholder: real submission wires to the eWay payment gateway and
-    // the fm-validator pipeline once those integrations are supplied.
-    setTimeout(() => {
+
+    // PLACEHOLDER — not real encryption. eWay's actual client-side SDK
+    // integration is still blocked on their API docs, matching the same
+    // honest placeholder on the backend (src/utils/eway-payment.js).
+    // Real card fields should never be sent to our own backend even as
+    // a placeholder — this must be replaced with whatever opaque token
+    // eWay's real client SDK produces once it's wired in.
+    const eWayEncryptedPayload = 'PLACEHOLDER_NOT_REAL_ENCRYPTION';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/submit-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storedAs,
+          fullName: nameInput.value.trim(),
+          company: companyInput.value.trim(),
+          email: emailInput.value.trim(),
+          eWayEncryptedPayload,
+          quotedGrandTotal,
+        }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        hidePopups();
+        showError(data.message || 'Your order could not be submitted. Please try again.');
+        return;
+      }
+
       hidePopups();
+      orderIdEl.textContent = data.orderId;
       page.querySelectorAll('.subform-section, .subform-footer, .demo-modal__header').forEach((el) => {
         (el as HTMLElement).style.display = 'none';
       });
       successMsg.style.display = 'block';
-    }, 1400);
+    } catch (err) {
+      hidePopups();
+      showError('Could not connect to the server. Please check your connection and try again.');
+    }
   });
 
   function hasInput(): boolean {
