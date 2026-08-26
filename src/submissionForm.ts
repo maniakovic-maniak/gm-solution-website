@@ -4,7 +4,7 @@ const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 // form calls the fm-validator VPS directly, not a separate website
 // backend. Requires the website's real domain to be added to
 // fm-validator's ALLOWED_ORIGIN before this will work cross-origin.
-const API_BASE = 'https://gm-audit.com';
+const API_BASE = 'https://plsfx.ai/fm-validator';
 
 function formatDollars(dollars: number): string {
   return `AU$${dollars.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
