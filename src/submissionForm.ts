@@ -6,8 +6,8 @@ const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 // fm-validator's ALLOWED_ORIGIN before this will work cross-origin.
 const API_BASE = 'https://gm-audit.com';
 
-function formatCents(cents: number): string {
-  return `AU$${(cents / 100).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+function formatDollars(dollars: number): string {
+  return `AU$${dollars.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function isValidName(v: string): boolean {
@@ -370,9 +370,9 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
       bandModerate.textContent = String(priceData.fscoreDist.Moderate);
       bandHigh.textContent = String(priceData.fscoreDist.High);
       bandCritical.textContent = String(priceData.fscoreDist.Critical);
-      subtotalEl.textContent = formatCents(priceData.priceTotal);
-      gstEl.textContent = formatCents(priceData.gstTotal);
-      grandTotalEl.textContent = formatCents(priceData.grandTotal);
+      subtotalEl.textContent = formatDollars(priceData.priceTotal);
+      gstEl.textContent = formatDollars(priceData.gstTotal);
+      grandTotalEl.textContent = formatDollars(priceData.grandTotal);
       quotedGrandTotal = priceData.grandTotal;
 
       fileVerified = true;
