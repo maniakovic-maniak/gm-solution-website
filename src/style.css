@@ -939,6 +939,22 @@ section[data-section] {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
+/* Error messages can genuinely run longer than "Cooking..." - a fixed
+   300px card left them cramped into many short, hard-to-read lines.
+   Widening just this variant, plus overflow-wrap as a hard guarantee
+   against any single long word/filename ever overflowing the card
+   regardless of length. */
+.popup-card--wide {
+  max-width: 400px;
+}
+.popup-error-text {
+  font-size: 0.8rem;
+  color: #791f1f;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 .popup-close {
   position: absolute;
   top: 0.75rem;
@@ -956,6 +972,11 @@ section[data-section] {
 }
 
 .popup-loading-text { font-size: 0.85rem; font-weight: 500; color: #5F5E5A; }
+.popup-loading-dots { display: inline-block; width: 1.2em; text-align: left; }
+.popup-loading-percent {
+  font-size: 0.78rem; font-weight: 600; color: #1f7a5c;
+  font-variant-numeric: tabular-nums; margin-top: 0.35rem; min-height: 1.1em;
+}
 
 .popup-error-icon {
   width: 40px; height: 40px; border-radius: 50%;
@@ -963,7 +984,6 @@ section[data-section] {
   display: flex; align-items: center; justify-content: center;
   font-size: 1.2rem; font-weight: 700; margin: 0 auto 0.85rem;
 }
-.popup-error-text { font-size: 0.8rem; color: #791f1f; line-height: 1.5; }
 
 .tcs-popup-card {
   background: #F5F4EF;

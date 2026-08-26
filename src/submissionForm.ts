@@ -13,6 +13,32 @@ function formatDollars(dollars: number): string {
 function isValidName(v: string): boolean {
   return /^[\p{L}\s'-]+$/u.test(v.trim()) && v.trim().length > 0;
 }
+
+/**
+ * Plain fetch() has no native upload-progress event - XHR is the
+ * reliable way to get real, byte-level upload progress in a browser.
+ * Wrapped in a promise so the rest of the async/await flow stays clean.
+ */
+function uploadWithProgress(url: string, formData: FormData, onProgress: (percent: number) => void): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    });
+    xhr.addEventListener('load', () => {
+      try {
+        resolve(JSON.parse(xhr.responseText));
+      } catch (err) {
+        reject(new Error('Could not parse the server response.'));
+      }
+    });
+    xhr.addEventListener('error', () => reject(new Error('Network error during upload.')));
+    xhr.send(formData);
+  });
+}
 function isNotEmpty(v: string): boolean {
   return v.trim().length > 0;
 }
@@ -209,7 +235,8 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   loadingPopup.innerHTML = `
     <div class="popup-card">
       <img class="popup-cauldron-img" src="/cauldron-loader.svg" width="100" height="100" alt="" />
-      <div class="popup-loading-text">Cooking…</div>
+      <div class="popup-loading-text">Cooking<span class="popup-loading-dots"></span></div>
+      <div class="popup-loading-percent"></div>
     </div>
   `;
   document.body.appendChild(loadingPopup);
@@ -217,7 +244,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   const errorPopup = document.createElement('div');
   errorPopup.className = 'popup-overlay';
   errorPopup.innerHTML = `
-    <div class="popup-card">
+    <div class="popup-card popup-card--wide">
       <button class="popup-close" type="button" aria-label="Close">&times;</button>
       <div class="popup-error-icon">!</div>
       <div class="popup-error-text"></div>
@@ -249,12 +276,37 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   `;
   document.body.appendChild(tcsPopup);
 
+  let loadingDotsTimer: ReturnType<typeof setInterval> | null = null;
+  function startLoadingDots() {
+    const dotsEl = loadingPopup.querySelector('.popup-loading-dots') as HTMLElement;
+    let count = 0;
+    dotsEl.textContent = '';
+    loadingDotsTimer = setInterval(() => {
+      count = (count + 1) % 4; // cycles through 0,1,2,3 dots
+      dotsEl.textContent = '.'.repeat(count);
+    }, 400);
+  }
+  function stopLoadingDots() {
+    if (loadingDotsTimer) {
+      clearInterval(loadingDotsTimer);
+      loadingDotsTimer = null;
+    }
+  }
+  function setLoadingPercent(percent: number | null) {
+    const percentEl = loadingPopup.querySelector('.popup-loading-percent') as HTMLElement;
+    percentEl.textContent = percent === null ? '' : `${percent}%`;
+  }
+
   function showPopup(el: HTMLElement) {
     [loadingPopup, errorPopup, tcsPopup].forEach((p) => p.classList.remove('show'));
     el.classList.add('show');
+    stopLoadingDots();
+    if (el === loadingPopup) startLoadingDots();
   }
   function hidePopups() {
     [loadingPopup, errorPopup, tcsPopup].forEach((p) => p.classList.remove('show'));
+    stopLoadingDots();
+    setLoadingPercent(null);
   }
   function showError(message: string) {
     (errorPopup.querySelector('.popup-error-text') as HTMLElement).textContent = message;
@@ -327,13 +379,21 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
     }
 
     showPopup(loadingPopup);
+    setLoadingPercent(0);
 
     try {
       // ── Step 1: real integrity check (Instance 2) — fast, no pipeline ──
       const formData = new FormData();
       formData.append('file', file);
-      const verifyRes = await fetch(`${API_BASE}/api/verify-upload`, { method: 'POST', body: formData });
-      const verifyData = await verifyRes.json();
+      const verifyData = await uploadWithProgress(`${API_BASE}/api/verify-upload`, formData, (percent) => {
+        setLoadingPercent(percent);
+        if (percent >= 100) {
+          // Upload itself is done; the server is now scanning the file -
+          // no further percentage is genuinely trackable for that part,
+          // so drop back to just the animated dots for ongoing feedback.
+          setLoadingPercent(null);
+        }
+      });
 
       if (!verifyData.passed) {
         hidePopups();
