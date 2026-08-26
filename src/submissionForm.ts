@@ -235,7 +235,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   loadingPopup.innerHTML = `
     <div class="popup-card">
       <img class="popup-cauldron-img" src="/cauldron-loader.svg" width="100" height="100" alt="" />
-      <div class="popup-loading-text">Cooking<span class="popup-loading-dots"></span></div>
+      <div class="popup-loading-text"><span class="popup-loading-label">Cooking</span><span class="popup-loading-dots"></span></div>
       <div class="popup-loading-percent"></div>
     </div>
   `;
@@ -295,6 +295,10 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   function setLoadingPercent(percent: number | null) {
     const percentEl = loadingPopup.querySelector('.popup-loading-percent') as HTMLElement;
     percentEl.textContent = percent === null ? '' : `${percent}%`;
+  }
+  function setLoadingLabel(text: string) {
+    const labelEl = loadingPopup.querySelector('.popup-loading-label') as HTMLElement;
+    labelEl.textContent = text;
   }
 
   function showPopup(el: HTMLElement) {
@@ -379,6 +383,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
     }
 
     showPopup(loadingPopup);
+    setLoadingLabel('Uploading');
     setLoadingPercent(0);
 
     try {
@@ -390,7 +395,8 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
         if (percent >= 100) {
           // Upload itself is done; the server is now scanning the file -
           // no further percentage is genuinely trackable for that part,
-          // so drop back to just the animated dots for ongoing feedback.
+          // so switch the label and drop back to just the animated dots.
+          setLoadingLabel('Cooking');
           setLoadingPercent(null);
         }
       });
