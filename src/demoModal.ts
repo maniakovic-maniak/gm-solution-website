@@ -65,7 +65,7 @@ export function setupDemoModal(): DemoModal {
   page1.innerHTML = `
     <div class="demo-modal__header">
       <h2 class="demo-modal__title">Demo request</h2>
-      <p class="demo-modal__subcopy">I'd like to request a demo of the audit report.</p>
+      <p class="demo-modal__subcopy">I'd like to request a demo of the financial model review report.</p>
     </div>
 
     <form class="demo-modal__form">

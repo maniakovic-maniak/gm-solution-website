@@ -1541,3 +1541,17 @@ section[data-section] {
 .company-panel-single p:last-child {
   margin-bottom: 0;
 }
+
+@media (max-width: 640px) {
+  .demo-modal__form {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.9rem;
+  }
+  .demo-modal__field {
+    flex: 1 1 auto;
+  }
+  .demo-modal__submit {
+    margin-top: 0.9rem;
+  }
+}
