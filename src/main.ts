@@ -5,7 +5,7 @@ import { setupScrollEngine } from './scrollEngine';
 import { setupMotionInput } from './motion';
 import { setupNav } from './nav';
 import { setupFloatingCta } from './floatingCta';
-import { setupMiniCarousels } from './miniCarousel';
+import { setupMiniCarousels, resetMiniCarousels } from './miniCarousel';
 
 function isLowPower(): boolean {
   const cores = navigator.hardwareConcurrency || 4;
@@ -45,11 +45,18 @@ try {
   // synchronously during setup, before nav exists yet -- so the callback
   // guards on a mutable holder instead of closing over `nav` directly.
   let nav: ReturnType<typeof setupNav> | null = null;
+  const PRODUCT_SLOT_INDEX = 1;
+  let prevLockedSlot = 0;
 
   const controls = setupScrollEngine(sectionCount, (progress, locked, lockedSlot) => {
     galaxy.setScrollProgress(progress);
     overlay.setProgress(progress, locked, lockedSlot);
     nav?.setActive(lockedSlot);
+
+    if (lockedSlot !== prevLockedSlot) {
+      if (prevLockedSlot === PRODUCT_SLOT_INDEX) resetMiniCarousels();
+      prevLockedSlot = lockedSlot;
+    }
   });
 
   nav = setupNav(controls);

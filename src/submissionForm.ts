@@ -65,7 +65,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
 
   page.innerHTML = `
     <div class="demo-modal__header">
-      <p class="subform-intro">Upload your financial model. Get back a structured, professional-grade audit — formula logic checked, not just numbers glanced at — for a fraction of what a manual review costs.</p>
+      <p class="subform-intro">Upload your financial model. Get back a structured, professional-grade review — formula logic checked, not just numbers glanced at — for a fraction of what manual verification costs.</p>
     </div>
 
     <div class="subform-section">

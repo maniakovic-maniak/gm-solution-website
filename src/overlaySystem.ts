@@ -50,8 +50,14 @@ export class OverlaySystem {
 
     window.addEventListener('resize', () => {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      const rescale = TARGET_WORLD_WIDTH / currentCardCssWidth();
-      this.cards.forEach((card) => card.object.scale.setScalar(rescale));
+      // Measure each card's own actual rendered width rather than assuming
+      // one shared width -- cards can have their own CSS width override
+      // (e.g. the wider Product card), including viewport-relative widths
+      // that change continuously on resize, not just at a fixed breakpoint.
+      this.cards.forEach((card) => {
+        const measuredWidth = card.el.getBoundingClientRect().width || currentCardCssWidth();
+        card.object.scale.setScalar(TARGET_WORLD_WIDTH / measuredWidth);
+      });
     });
 
     const sections = document.querySelectorAll<HTMLElement>('[data-section]');
@@ -62,7 +68,8 @@ export class OverlaySystem {
       if (!cardEl) return;
 
       const object = new CSS3DObject(cardEl);
-      const baseScale = TARGET_WORLD_WIDTH / currentCardCssWidth();
+      const measuredWidth = cardEl.getBoundingClientRect().width || currentCardCssWidth();
+      const baseScale = TARGET_WORLD_WIDTH / measuredWidth;
       object.scale.setScalar(baseScale);
       this.scene.add(object);
 
