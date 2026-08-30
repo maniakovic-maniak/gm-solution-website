@@ -1595,7 +1595,7 @@ section[data-section] {
 
 .scroll-hint {
   position: fixed;
-  top: 1.5rem;
+  top: 5.5rem;
   left: 50%;
   transform: translateX(-50%) translateY(-10px);
   z-index: 50;
@@ -1628,4 +1628,8 @@ section[data-section] {
 .overlay-card--pricing.is-solid,
 .overlay-card--company.is-solid {
   background: rgba(10, 14, 24, 0.92);
+}
+
+.teal-text {
+  color: #3d8b85;
 }

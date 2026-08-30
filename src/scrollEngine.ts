@@ -14,7 +14,12 @@ const MAX_STEP_PER_EVENT_FRACTION = 1.0; // clamp: a single wheel event can move
 // is still bounded by the crossing-detection clamp below, so it can't
 // cause a skip even if it's still technically decaying.
 const LOCK_COOLDOWN_MS = 220;
-const SETTLE_SILENCE_MS = 100; // if no further input arrives this long while
+const SETTLE_SILENCE_MS = 100;
+const DELTA_NOISE_FLOOR = 4; // real touch hardware essentially never reports
+                              // exactly 0 for deltaY even when a finger is just
+                              // resting still -- without a real floor, every
+                              // tiny jitter gets processed as genuine movement,
+                              // which is what caused the flicker under touch // if no further input arrives this long while
                                 // unlocked and mid-transition, snap to the
                                 // nearest slot rather than leaving the card
                                 // visually stranded between two settled states
@@ -88,6 +93,7 @@ export function setupScrollEngine(
     onChange: (self) => {
       if (document.body.classList.contains('modal-open')) return;
       const rawDelta = self.deltaY;
+      if (Math.abs(rawDelta) < DELTA_NOISE_FLOOR) return;
 
       if (locked) {
         if (Date.now() - lockedAt < LOCK_COOLDOWN_MS) return; // absorb the initial momentum burst only
