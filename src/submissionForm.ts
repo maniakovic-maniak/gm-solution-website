@@ -1,6 +1,6 @@
 const ALLOWED_EXTENSIONS = ['.xlsx', '.xlsm', '.xlsb', '.xls'];
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
-// Per the confirmed architecture assumption in the Phase B spec — this
+// Per the confirmed architecture assumption in the Phase B spec - this
 // form calls the fm-validator VPS directly, not a separate website
 // backend. Requires the website's real domain to be added to
 // fm-validator's ALLOWED_ORIGIN before this will work cross-origin.
@@ -65,7 +65,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
 
   page.innerHTML = `
     <div class="demo-modal__header">
-      <p class="subform-intro">Upload your financial model. Get back a structured, professional-grade review — formula logic checked, not just numbers glanced at — for a fraction of what manual verification costs.</p>
+      <p class="subform-intro">Upload your financial model. Get back a structured, professional-grade review - formula logic checked, not just numbers glanced at - for a fraction of what manual verification costs.</p>
     </div>
 
     <div class="subform-section">
@@ -159,19 +159,19 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
         <div class="subform-summary-row subform-uf-expand">
           <span>Unique formulas</span>
           <span class="subform-val">
-            <span class="subform-uf-count">—</span>
+            <span class="subform-uf-count">-</span>
             <svg class="subform-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
           </span>
         </div>
         <div class="subform-uf-breakdown">
-          <div class="subform-summary-row"><span>Low</span><span class="subform-val subform-band-low">—</span></div>
-          <div class="subform-summary-row"><span>Moderate</span><span class="subform-val subform-band-moderate">—</span></div>
-          <div class="subform-summary-row"><span>High</span><span class="subform-val subform-band-high">—</span></div>
-          <div class="subform-summary-row"><span>Critical</span><span class="subform-val subform-band-critical">—</span></div>
+          <div class="subform-summary-row"><span>Low</span><span class="subform-val subform-band-low">-</span></div>
+          <div class="subform-summary-row"><span>Moderate</span><span class="subform-val subform-band-moderate">-</span></div>
+          <div class="subform-summary-row"><span>High</span><span class="subform-val subform-band-high">-</span></div>
+          <div class="subform-summary-row"><span>Critical</span><span class="subform-val subform-band-critical">-</span></div>
         </div>
-        <div class="subform-summary-row"><span>Subtotal</span><span class="subform-val subform-subtotal">—</span></div>
-        <div class="subform-summary-row"><span>GST</span><span class="subform-val subform-gst">—</span></div>
-        <div class="subform-summary-row subform-summary-row--total"><span>Total</span><span class="subform-val subform-grand-total">—</span></div>
+        <div class="subform-summary-row"><span>Subtotal</span><span class="subform-val subform-subtotal">-</span></div>
+        <div class="subform-summary-row"><span>GST</span><span class="subform-val subform-gst">-</span></div>
+        <div class="subform-summary-row subform-summary-row--total"><span>Total</span><span class="subform-val subform-grand-total">-</span></div>
       </div>
 
       <div class="subform-tcs-row">
@@ -189,7 +189,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
       </button>
     </div>
 
-    <p class="subform-success" style="display:none">Thanks — your order <strong class="subform-order-id"></strong> is on its way. We'll email your Order ID and next steps shortly.</p>
+    <p class="subform-success" style="display:none">Thanks - your order <strong class="subform-order-id"></strong> is on its way. We'll email your Order ID and next steps shortly.</p>
   `;
 
   const dropzone = page.querySelector('.subform-dropzone') as HTMLElement;
@@ -259,10 +259,10 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
       <button class="popup-close" type="button" aria-label="Close">&times;</button>
       <div class="tcs-popup-header">Terms &amp; Conditions</div>
       <div class="tcs-popup-body">
-        <p><strong>Placeholder — full Terms &amp; Conditions copy to be supplied.</strong></p>
+        <p><strong>Placeholder - full Terms &amp; Conditions copy to be supplied.</strong></p>
         <p>Your model and personal information are used only to run the audit pipeline and are deleted no later than two weeks after submission.</p>
         <p>1. Acceptance of terms. By uploading a file and submitting payment, you agree to these placeholder terms, which stand in for the final Terms and Conditions to be supplied ahead of launch.</p>
-        <p>2. Scope of service. GM-Solutions runs an automated three-tier review over the uploaded workbook — deterministic structural checks, checklist-driven rules, and a semantic review against a domain-specific rubric — and returns a structured audit report.</p>
+        <p>2. Scope of service. GM-Solutions runs an automated three-tier review over the uploaded workbook - deterministic structural checks, checklist-driven rules, and a semantic review against a domain-specific rubric - and returns a structured audit report.</p>
         <p>3. Data handling. Uploaded files and the personal details submitted alongside them are used solely to run the requested audit and generate the report. They are not shared with third parties beyond what is required to operate the service.</p>
         <p>4. Data retention. Your file and personal information are deleted no later than two weeks after submission, in line with the retention policy referenced above.</p>
         <p>5. Payment. Pricing is estimated from the number of unique formulas detected in the uploaded workbook at the time of upload. Charges are processed through our payment provider once you confirm and submit.</p>
@@ -387,7 +387,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
     setLoadingPercent(0);
 
     try {
-      // ── Step 1: real integrity check (Instance 2) — fast, no pipeline ──
+      // ── Step 1: real integrity check (Instance 2) - fast, no pipeline ──
       const formData = new FormData();
       formData.append('file', file);
       const verifyData = await uploadWithProgress(`${API_BASE}/api/verify-upload`, formData, (percent) => {
@@ -498,11 +498,11 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
     }
     showPopup(loadingPopup);
 
-    // PLACEHOLDER — not real encryption. eWay's actual client-side SDK
+    // PLACEHOLDER - not real encryption. eWay's actual client-side SDK
     // integration is still blocked on their API docs, matching the same
     // honest placeholder on the backend (src/utils/eway-payment.js).
     // Real card fields should never be sent to our own backend even as
-    // a placeholder — this must be replaced with whatever opaque token
+    // a placeholder - this must be replaced with whatever opaque token
     // eWay's real client SDK produces once it's wired in.
     const eWayEncryptedPayload = 'PLACEHOLDER_NOT_REAL_ENCRYPTION';
 

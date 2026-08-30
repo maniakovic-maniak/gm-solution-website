@@ -90,7 +90,7 @@ export function setupDemoModal(): DemoModal {
       </button>
     </form>
 
-    <p class="demo-modal__success" hidden>Thanks — we'll be in touch shortly.</p>
+    <p class="demo-modal__success" hidden>Thanks - we'll be in touch shortly.</p>
   `;
   track.appendChild(page1);
 
