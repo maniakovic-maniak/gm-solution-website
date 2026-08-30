@@ -8,6 +8,8 @@ function isTouchDevice(): boolean {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
+const MOTION_PROMPT_SEEN_KEY = 'motionPromptSeen';
+
 function setupGyro(callback: MotionCallback) {
   // Calibrate neutral position off the first reading rather than assuming
   // a fixed "upright" angle — phone-holding posture varies enough between
@@ -33,13 +35,33 @@ function setupGyro(callback: MotionCallback) {
   const needsExplicitPermission = DOE && typeof DOE.requestPermission === 'function';
 
   if (needsExplicitPermission) {
-    // iOS 13+ — must be requested from within a user gesture handler.
+    // iOS 13+ -- must be requested from within a user gesture handler.
+    // iOS never remembers a granted permission across page loads (a fresh
+    // tap is required every visit no matter what), so instead of nagging
+    // every single time regardless of outcome, we only ever show this
+    // prompt once per browser -- if it was already seen (granted, denied,
+    // or simply ignored), stay quiet on later visits rather than asking
+    // again.
+    let alreadySeen = false;
+    try {
+      alreadySeen = localStorage.getItem(MOTION_PROMPT_SEEN_KEY) === '1';
+    } catch {
+      // localStorage can throw in some private-browsing modes -- treat as
+      // not-yet-seen rather than breaking the whole flow.
+    }
+    if (alreadySeen) return;
+
     const btn = document.getElementById('enable-motion-btn');
     if (!btn) return;
     btn.style.display = 'block';
     btn.addEventListener(
       'click',
       () => {
+        try {
+          localStorage.setItem(MOTION_PROMPT_SEEN_KEY, '1');
+        } catch {
+          // ignore
+        }
         DOE.requestPermission()
           .then((state: string) => {
             if (state === 'granted') {

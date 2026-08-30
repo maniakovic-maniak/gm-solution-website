@@ -6,6 +6,7 @@ import { setupMotionInput } from './motion';
 import { setupNav } from './nav';
 import { setupFloatingCta } from './floatingCta';
 import { setupMiniCarousels, resetMiniCarousels } from './miniCarousel';
+import { setupScrollHint } from './scrollHint';
 
 function isLowPower(): boolean {
   const cores = navigator.hardwareConcurrency || 4;
@@ -48,16 +49,22 @@ try {
   const PRODUCT_SLOT_INDEX = 1;
   let prevLockedSlot = 0;
 
-  const controls = setupScrollEngine(sectionCount, (progress, locked, lockedSlot) => {
-    galaxy.setScrollProgress(progress);
-    overlay.setProgress(progress, locked, lockedSlot);
-    nav?.setActive(lockedSlot);
+  const scrollHint = setupScrollHint();
 
-    if (lockedSlot !== prevLockedSlot) {
-      if (prevLockedSlot === PRODUCT_SLOT_INDEX) resetMiniCarousels();
-      prevLockedSlot = lockedSlot;
-    }
-  });
+  const controls = setupScrollEngine(
+    sectionCount,
+    (progress, locked, lockedSlot) => {
+      galaxy.setScrollProgress(progress);
+      overlay.setProgress(progress, locked, lockedSlot);
+      nav?.setActive(lockedSlot);
+
+      if (lockedSlot !== prevLockedSlot) {
+        if (prevLockedSlot === PRODUCT_SLOT_INDEX) resetMiniCarousels();
+        prevLockedSlot = lockedSlot;
+      }
+    },
+    (direction) => scrollHint.show(direction)
+  );
 
   nav = setupNav(controls);
   nav.setActive(0);

@@ -4,7 +4,7 @@ import { Observer } from 'gsap/Observer';
 gsap.registerPlugin(Observer);
 
 const SENSITIVITY = 0.00055;
-const RELEASE_THRESHOLD = 130; // accumulated input needed to break a lock -- higher than before so
+const RELEASE_THRESHOLD = 80; // accumulated input needed to break a lock -- higher than before so
                                 // a few leftover decaying-momentum events can't trigger it alone
 const MAX_STEP_PER_EVENT_FRACTION = 1.0; // clamp: a single wheel event can move at most one full slot-step
 // Fixed, short cooldown after locking -- just long enough to eat the
@@ -13,7 +13,11 @@ const MAX_STEP_PER_EVENT_FRACTION = 1.0; // clamp: a single wheel event can move
 // like the page was stuck). Any momentum that survives past this window
 // is still bounded by the crossing-detection clamp below, so it can't
 // cause a skip even if it's still technically decaying.
-const LOCK_COOLDOWN_MS = 320;
+const LOCK_COOLDOWN_MS = 220;
+const SETTLE_SILENCE_MS = 100; // if no further input arrives this long while
+                                // unlocked and mid-transition, snap to the
+                                // nearest slot rather than leaving the card
+                                // visually stranded between two settled states
 
 export interface ScrollEngineControls {
   goToSlot: (index: number) => void;
@@ -21,7 +25,8 @@ export interface ScrollEngineControls {
 
 export function setupScrollEngine(
   slotCount: number,
-  onProgress: (progress: number, locked: boolean, lockedSlot: number) => void
+  onProgress: (progress: number, locked: boolean, lockedSlot: number) => void,
+  onBoundaryAttempt?: (direction: 'up' | 'down') => void
 ): ScrollEngineControls {
   const step = 1 / (slotCount - 1);
   const maxStepDelta = step * MAX_STEP_PER_EVENT_FRACTION;
@@ -31,6 +36,9 @@ export function setupScrollEngine(
   let lockedSlot = 0;
   let releaseAccum = 0;
   let lockedAt = Date.now();
+  let lastBoundaryHintAt = 0;
+  const BOUNDARY_HINT_COOLDOWN_MS = 700; // avoid re-firing dozens of times during one held gesture
+  let settleTimer: ReturnType<typeof setTimeout> | null = null;
 
   const state = { v: 0 };
 
@@ -52,6 +60,19 @@ export function setupScrollEngine(
     });
   }
 
+  function scheduleSettle() {
+    if (settleTimer) clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      settleTimer = null;
+      if (locked || document.body.classList.contains('modal-open')) return;
+      const nearest = Math.max(0, Math.min(slotCount - 1, Math.round(progress / step)));
+      lockedSlot = nearest;
+      locked = true;
+      lockedAt = Date.now();
+      tweenTo(nearest * step);
+    }, SETTLE_SILENCE_MS);
+  }
+
   // First-card intro: start slightly "before" slot 0 in progress-space and
   // tween in, so card 0 plays through the exact same entry animation every
   // other card gets on arrival, rather than appearing pre-settled.
@@ -71,12 +92,30 @@ export function setupScrollEngine(
       if (locked) {
         if (Date.now() - lockedAt < LOCK_COOLDOWN_MS) return; // absorb the initial momentum burst only
 
+        // Trying to go before the first slot or past the last slot -- the
+        // only real direction available is the opposite one, so surface a
+        // hint rather than silently absorbing the input.
+        const atStart = lockedSlot === 0 && rawDelta < 0;
+        const atEnd = lockedSlot === slotCount - 1 && rawDelta > 0;
+        if ((atStart || atEnd) && onBoundaryAttempt) {
+          const now = Date.now();
+          if (now - lastBoundaryHintAt > BOUNDARY_HINT_COOLDOWN_MS) {
+            lastBoundaryHintAt = now;
+            onBoundaryAttempt(atStart ? 'down' : 'up');
+          }
+        }
+
         releaseAccum += rawDelta;
         if (Math.abs(releaseAccum) > RELEASE_THRESHOLD) {
           locked = false;
           releaseAccum = 0;
+          // Fall through into the movement logic below using this same
+          // event's delta -- the swipe/scroll that unlocks the page should
+          // also count toward actually moving it, instead of being thrown
+          // away and forcing a separate second gesture to start progress.
+        } else {
+          return;
         }
-        return;
       }
 
       // Clamp movement per single event so a fast fling can never jump
@@ -103,6 +142,7 @@ export function setupScrollEngine(
       }
 
       commit(gsap.utils.clamp(0, 1, proposed));
+      scheduleSettle();
     },
   });
 
