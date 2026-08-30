@@ -22,6 +22,19 @@ function goTo(state: CarouselState, index: number) {
   }
 }
 
+/** All cards sit in normal flow (only translated off-screen, never
+ * display:none), so their real natural height can be measured directly
+ * even while hidden -- take the tallest and lock the track to that one
+ * fixed pixel height, so the card never resizes between slides and we
+ * never depend on fragile CSS flex-stretch across transformed siblings.
+ * Re-run whenever the viewport changes, since a narrower/wider card
+ * reflows its text into a different number of lines, making a height
+ * measured at one width stale (and potentially too short) at another. */
+function applyTrackHeight(state: CarouselState) {
+  const maxHeight = Math.max(...state.cards.map((card) => card.scrollHeight));
+  state.track.style.height = `${maxHeight}px`;
+}
+
 function setupOne(container: HTMLElement) {
   const track = container.querySelector('.mini-track') as HTMLElement;
   const cards = Array.from(track.children) as HTMLElement[];
@@ -42,14 +55,7 @@ function setupOne(container: HTMLElement) {
   const state: CarouselState = { container, track, cards, dots, prevBtn, nextBtn, index: 0 };
   carouselStates.push(state);
   goTo(state, 0);
-
-  // All cards sit in normal flow (only translated off-screen, never
-  // display:none), so their real natural height can be measured directly
-  // even while hidden -- take the tallest and lock the track to that one
-  // fixed pixel height, so the card never resizes between slides and we
-  // never depend on fragile CSS flex-stretch across transformed siblings.
-  const maxHeight = Math.max(...cards.map((card) => card.scrollHeight));
-  track.style.height = `${maxHeight}px`;
+  applyTrackHeight(state);
 
   prevBtn?.addEventListener('click', () => goTo(state, state.index - 1));
   nextBtn?.addEventListener('click', () => goTo(state, state.index + 1));
@@ -57,6 +63,14 @@ function setupOne(container: HTMLElement) {
 
 export function setupMiniCarousels() {
   document.querySelectorAll<HTMLElement>('.mini-carousel').forEach(setupOne);
+
+  let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+  window.addEventListener('resize', () => {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      carouselStates.forEach((state) => applyTrackHeight(state));
+    }, 150);
+  });
 }
 
 export function resetMiniCarousels() {

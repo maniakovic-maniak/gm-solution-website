@@ -55,7 +55,7 @@ export class OverlaySystem {
       // (e.g. the wider Product card), including viewport-relative widths
       // that change continuously on resize, not just at a fixed breakpoint.
       this.cards.forEach((card) => {
-        const measuredWidth = card.el.getBoundingClientRect().width || currentCardCssWidth();
+        const measuredWidth = card.el.offsetWidth || currentCardCssWidth();
         card.object.scale.setScalar(TARGET_WORLD_WIDTH / measuredWidth);
       });
     });
@@ -68,7 +68,7 @@ export class OverlaySystem {
       if (!cardEl) return;
 
       const object = new CSS3DObject(cardEl);
-      const measuredWidth = cardEl.getBoundingClientRect().width || currentCardCssWidth();
+      const measuredWidth = cardEl.offsetWidth || currentCardCssWidth();
       const baseScale = TARGET_WORLD_WIDTH / measuredWidth;
       object.scale.setScalar(baseScale);
       this.scene.add(object);
