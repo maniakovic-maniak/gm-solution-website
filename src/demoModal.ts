@@ -1,6 +1,7 @@
 import { gsap } from 'gsap';
 import { buildSubmissionFormPage } from './submissionForm';
 
+const API_BASE = 'https://plsfx.ai/fm-validator';
 const CLOSE_MAGNETIC_STRENGTH = 0.4;
 const PAGE_COUNT = 2;
 
@@ -88,18 +89,49 @@ export function setupDemoModal(): DemoModal {
           <span class="demo-modal__submit-label">Request</span>
         </span>
       </button>
+
+      <p class="demo-modal__error" hidden></p>
     </form>
 
-    <p class="demo-modal__success" hidden>Thanks - we'll be in touch shortly.</p>
+    <p class="demo-modal__success" hidden>Thanks - check your inbox, your sample report is on its way.</p>
   `;
   track.appendChild(page1);
 
   const demoForm = page1.querySelector('.demo-modal__form') as HTMLFormElement;
   const demoSuccess = page1.querySelector('.demo-modal__success') as HTMLElement;
-  demoForm.addEventListener('submit', (e) => {
+  const demoError = page1.querySelector('.demo-modal__error') as HTMLElement;
+  const demoSubmitBtn = page1.querySelector('.demo-modal__submit') as HTMLButtonElement;
+
+  demoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    demoForm.hidden = true;
-    demoSuccess.hidden = false;
+    demoError.hidden = true;
+    demoSubmitBtn.disabled = true;
+
+    const formData = new FormData(demoForm);
+    const name = String(formData.get('name') || '').trim();
+    const company = String(formData.get('company') || '').trim();
+    const email = String(formData.get('email') || '').trim();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/submit-demo-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, company, email }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        demoError.textContent = data.message || 'Something went wrong. Please try again.';
+        demoError.hidden = false;
+        demoSubmitBtn.disabled = false;
+        return;
+      }
+      demoForm.hidden = true;
+      demoSuccess.hidden = false;
+    } catch (err) {
+      demoError.textContent = 'Could not reach the server. Please check your connection and try again.';
+      demoError.hidden = false;
+      demoSubmitBtn.disabled = false;
+    }
   });
 
   function page1HasInput(): boolean {

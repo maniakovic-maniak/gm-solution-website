@@ -470,6 +470,9 @@ section[data-section] {
   align-items: flex-end;
   gap: 1.75rem;
 }
+.demo-modal__form[hidden] {
+  display: none;
+}
 
 .demo-modal__field {
   flex: 1 1 160px;
