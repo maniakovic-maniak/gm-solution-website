@@ -176,6 +176,10 @@ export function setupDemoModal(): DemoModal {
     backdrop.classList.add('is-open');
     document.body.classList.add('modal-open');
     quitPopup.classList.remove('show');
+    demoForm.hidden = false;
+    demoSuccess.hidden = true;
+    demoError.hidden = true;
+    demoSubmitBtn.disabled = false;
     goTo(0);
   }
 
