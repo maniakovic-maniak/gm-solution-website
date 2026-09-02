@@ -8,7 +8,7 @@ import * as THREE from 'three';
 export const GLYPHS = [
   'Σ', '∫', 'π', '√', '∞', 'Δ', '≈', '±',
   '=SUM(', '=NPV(', 'f(x)', '%', 'σ', 'μ', '∂', 'λ',
-  'audit', '[F1]', '[GM]', 'Solutions',
+  '[F1]',
 ];
 
 const GRID_COLS = 5;
