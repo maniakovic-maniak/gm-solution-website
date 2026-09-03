@@ -997,17 +997,22 @@ section[data-section] {
 .tcs-popup-card {
   background: #F5F4EF;
   border-radius: 16px;
-  max-width: 440px;
+  max-width: 760px;
   width: 100%;
-  max-height: 75vh;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
-.tcs-popup-header { padding: 1.1rem 1.4rem; border-bottom: 1px solid rgba(22, 23, 26, 0.1); font-weight: 700; font-size: 0.9rem; }
-.tcs-popup-body { padding: 1.1rem 1.4rem; overflow-y: auto; font-size: 0.78rem; color: #5F5E5A; line-height: 1.6; }
-.tcs-popup-body p { margin-bottom: 0.7rem; }
+.tcs-popup-header { padding: 1.3rem 2rem; border-bottom: 1px solid rgba(22, 23, 26, 0.1); font-weight: 700; font-size: 1rem; }
+.tcs-popup-body { padding: 1.3rem 2rem 2rem; overflow-y: auto; font-size: 0.82rem; color: #5F5E5A; line-height: 1.65; }
+.tcs-popup-body p { margin-bottom: 0.9rem; }
+.tcs-popup-body h2 { font-size: 0.95rem; font-weight: 700; color: #16171A; margin: 1.6rem 0 0.7rem; }
+.tcs-popup-body h2:first-child { margin-top: 0; }
+.tcs-popup-body ul { margin: 0 0 0.9rem 1.3rem; padding: 0; }
+.tcs-popup-body li { margin-bottom: 0.5rem; }
+.tcs-popup-body li p { margin-bottom: 0.3rem; }
 
 /* Mobile: swap dropzone for the picker button */
 @media (max-width: 480px) {
