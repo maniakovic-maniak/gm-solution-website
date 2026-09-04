@@ -881,9 +881,10 @@ section[data-section] {
 
 /* Promo code */
 .subform-promo-row { align-items: flex-end; gap: 0.7rem; }
-.subform-promo-row .subform-field { flex: 1; }
+.subform-promo-row .subform-field { flex: 0 1 auto; width: 45%; min-width: 130px; margin-bottom: 0; }
 .subform-promo-apply {
-  border: none;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   border-radius: 8px;
   padding: 0.6rem 1.1rem;
   font-family: inherit;
@@ -900,7 +901,7 @@ section[data-section] {
 .subform-promo-apply--applied,
 .subform-promo-apply--applied:disabled,
 .subform-promo-apply--applied:not(:disabled) { background: #e8f0f8; color: #185fa5; cursor: default; }
-.subform-promo-error { font-size: 0.7rem; color: #C0392B; margin: 0.35rem 0 0; }
+.subform-promo-error { font-size: 0.7rem; color: #C0392B; margin: 0.2rem 0 0; }
 .subform-discount { color: #185fa5; font-weight: 700; }
 
 .subform-expiry-row { display: flex; align-items: center; gap: 0.4rem; }
