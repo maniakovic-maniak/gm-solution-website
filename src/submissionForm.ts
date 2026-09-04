@@ -154,6 +154,15 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
         </div>
       </div>
 
+      <div class="subform-field-row subform-promo-row">
+        <div class="subform-field">
+          <label for="sub-promo">Promo code</label>
+          <input id="sub-promo" type="text" placeholder="Enter your code" />
+        </div>
+        <button class="subform-promo-apply" type="button" disabled>Apply</button>
+      </div>
+      <p class="subform-promo-error" hidden></p>
+
       <div class="subform-summary" style="display:none">
         <div class="subform-summary-title">Summary</div>
         <div class="subform-summary-row subform-uf-expand">
@@ -170,6 +179,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
           <div class="subform-summary-row"><span>Critical</span><span class="subform-val subform-band-critical">-</span></div>
         </div>
         <div class="subform-summary-row"><span>Subtotal</span><span class="subform-val subform-subtotal">-</span></div>
+        <div class="subform-summary-row subform-discount-row" hidden><span>Discount</span><span class="subform-val subform-discount">-</span></div>
         <div class="subform-summary-row"><span>GST</span><span class="subform-val subform-gst">-</span></div>
         <div class="subform-summary-row subform-summary-row--total"><span>Total</span><span class="subform-val subform-grand-total">-</span></div>
       </div>
@@ -209,8 +219,13 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   const bandHigh = page.querySelector('.subform-band-high') as HTMLElement;
   const bandCritical = page.querySelector('.subform-band-critical') as HTMLElement;
   const subtotalEl = page.querySelector('.subform-subtotal') as HTMLElement;
+  const discountRow = page.querySelector('.subform-discount-row') as HTMLElement;
+  const discountEl = page.querySelector('.subform-discount') as HTMLElement;
   const gstEl = page.querySelector('.subform-gst') as HTMLElement;
   const grandTotalEl = page.querySelector('.subform-grand-total') as HTMLElement;
+  const promoInput = page.querySelector('#sub-promo') as HTMLInputElement;
+  const promoApplyBtn = page.querySelector('.subform-promo-apply') as HTMLButtonElement;
+  const promoErrorEl = page.querySelector('.subform-promo-error') as HTMLElement;
 
   const nameInput = page.querySelector('#sub-name') as HTMLInputElement;
   const companyInput = page.querySelector('#sub-company') as HTMLInputElement;
@@ -229,6 +244,8 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   let fileVerified = false;
   let storedAs: string | null = null;
   let quotedGrandTotal: number | null = null;
+  let lastPriceData: { priceTotal: number; fscoreDist: any; uniqueFormulaTotal: number } | null = null;
+  let appliedPromo: { code: string; discountType: string; discountValue: number } | null = null;
 
   const loadingPopup = document.createElement('div');
   loadingPopup.className = 'popup-overlay';
@@ -1155,10 +1172,14 @@ retained and reproduced.</p>
       bandModerate.textContent = String(priceData.fscoreDist.Moderate);
       bandHigh.textContent = String(priceData.fscoreDist.High);
       bandCritical.textContent = String(priceData.fscoreDist.Critical);
-      subtotalEl.textContent = formatDollars(priceData.priceTotal);
-      gstEl.textContent = formatDollars(priceData.gstTotal);
-      grandTotalEl.textContent = formatDollars(priceData.grandTotal);
-      quotedGrandTotal = priceData.grandTotal;
+      lastPriceData = { priceTotal: priceData.priceTotal, fscoreDist: priceData.fscoreDist, uniqueFormulaTotal: priceData.uniqueFormulaTotal };
+      appliedPromo = null;
+      promoInput.value = '';
+      promoApplyBtn.disabled = true;
+      promoApplyBtn.textContent = 'Apply';
+      promoApplyBtn.classList.remove('subform-promo-apply--applied');
+      promoErrorEl.hidden = true;
+      recalculateSummary();
 
       fileVerified = true;
       checkReady();
@@ -1169,10 +1190,104 @@ retained and reproduced.</p>
     }
   }
 
+  const MINIMUM_CHARGE = 10;
+
+  function computeDiscountedTotal() {
+    if (!lastPriceData) return null;
+    const priceTotal = lastPriceData.priceTotal;
+    let discountAmount = 0;
+    if (appliedPromo) {
+      if (appliedPromo.discountType === 'percent') {
+        discountAmount = Math.round(priceTotal * (appliedPromo.discountValue / 100));
+      } else {
+        discountAmount = appliedPromo.discountValue;
+      }
+    }
+    const discountedSubtotal = Math.max(0, priceTotal - discountAmount);
+    const gstTotal = Math.round(discountedSubtotal * 0.1);
+    let grandTotal = discountedSubtotal + gstTotal;
+    if (grandTotal < MINIMUM_CHARGE) grandTotal = MINIMUM_CHARGE;
+    return { priceTotal, discountAmount, gstTotal, grandTotal };
+  }
+
+  // Single source of truth for what the summary displays - both the
+  // initial, undiscounted state and every re-render after a promo code
+  // is applied go through this same function, so the displayed total
+  // can never drift from what submit-order will actually be quoted.
+  function recalculateSummary() {
+    const result = computeDiscountedTotal();
+    if (!result) return;
+    subtotalEl.textContent = formatDollars(result.priceTotal);
+    if (appliedPromo && result.discountAmount > 0) {
+      discountRow.hidden = false;
+      discountEl.textContent = `-${formatDollars(result.discountAmount)}`;
+    } else {
+      discountRow.hidden = true;
+    }
+    gstEl.textContent = formatDollars(result.gstTotal);
+    grandTotalEl.textContent = formatDollars(result.grandTotal);
+    quotedGrandTotal = result.grandTotal;
+  }
+
+  promoInput.addEventListener('input', () => {
+    // Once a code is applied, changing the text should require a fresh
+    // Apply tap, not silently keep the old discount active against
+    // different text.
+    if (appliedPromo) {
+      appliedPromo = null;
+      promoApplyBtn.textContent = 'Apply';
+      promoApplyBtn.classList.remove('subform-promo-apply--applied');
+      recalculateSummary();
+    }
+    promoApplyBtn.disabled = promoInput.value.trim().length === 0;
+    promoErrorEl.hidden = true;
+  });
+
+  promoApplyBtn.addEventListener('click', async () => {
+    const code = promoInput.value.trim();
+    if (!code || !emailInput.value.trim()) {
+      promoErrorEl.textContent = 'Enter your email above before applying a code.';
+      promoErrorEl.hidden = false;
+      return;
+    }
+    promoApplyBtn.disabled = true;
+    promoErrorEl.hidden = true;
+    try {
+      const res = await fetch(`${API_BASE}/api/validate-promo-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, email: emailInput.value.trim() }),
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        promoErrorEl.textContent = data.reason || 'That code could not be applied.';
+        promoErrorEl.hidden = false;
+        promoApplyBtn.disabled = false;
+        return;
+      }
+      appliedPromo = { code, discountType: data.discountType, discountValue: data.discountValue };
+      promoApplyBtn.textContent = 'Applied';
+      promoApplyBtn.classList.add('subform-promo-apply--applied');
+      recalculateSummary();
+    } catch (err) {
+      promoErrorEl.textContent = 'Could not reach the server. Please try again.';
+      promoErrorEl.hidden = false;
+      promoApplyBtn.disabled = false;
+    }
+  });
+
   function resetFile() {
     fileVerified = false;
     storedAs = null;
     quotedGrandTotal = null;
+    lastPriceData = null;
+    appliedPromo = null;
+    promoInput.value = '';
+    promoApplyBtn.disabled = true;
+    promoApplyBtn.textContent = 'Apply';
+    promoApplyBtn.classList.remove('subform-promo-apply--applied');
+    promoErrorEl.hidden = true;
+    discountRow.hidden = true;
     filePill.style.display = 'none';
     dropzone.style.display = '';
     mobileUploadBtn.style.display = '';
@@ -1236,6 +1351,7 @@ retained and reproduced.</p>
           email: emailInput.value.trim(),
           eWayEncryptedPayload,
           quotedGrandTotal,
+          promoCode: appliedPromo ? appliedPromo.code : null,
         }),
       });
       const data = await res.json();
