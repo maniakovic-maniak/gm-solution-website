@@ -11,6 +11,29 @@ const CARD_CSS_WIDTH_MOBILE = 320; // narrower on mobile so text wraps into a po
 function currentCardCssWidth(): number {
   return window.innerWidth < MOBILE_BREAKPOINT_PX ? CARD_CSS_WIDTH_MOBILE : CARD_CSS_WIDTH_DESKTOP;
 }
+
+// Widening a card's mobile CSS width gives its copy more room before
+// wrapping -- but this system's scale formula (TARGET_WORLD_WIDTH /
+// cssWidth) ties on-screen SIZE directly to CSS width, so a wider box at
+// the same font-size automatically renders smaller (wider denominator ->
+// smaller compensating scale). That's the opposite of what widening is
+// meant to achieve. Anchoring each card's scale calculation to a fixed
+// reference width -- independent of its actual, wider, CSS width --
+// decouples "how much room text has before wrapping" from "what size
+// everything renders at". Values are each section's own effective mobile
+// width BEFORE its most recent widening (Home: its original fixed 320px;
+// the other four: 92vw at a ~390px reference phone, i.e. their width
+// before this round's push to 96vw), so widening only adds wrap-room and
+// never shrinks anything relative to how it already looked. Only applies
+// below the mobile breakpoint; desktop widths are untouched, so desktop
+// continues using each card's real measured width as before.
+const MOBILE_SCALE_REFERENCE_BY_SECTION: Record<string, number> = {
+  home: 320,
+  product: 359,
+  security: 359,
+  pricing: 359,
+  company: 359,
+};
 const ENTRY_START_DISTANCE = 30;  // very close to camera — huge, heavily blurred "swooping past"
 const DEPART_END_DISTANCE = 950;  // far enough to be gone/faded
 const SETTLE_WIDTH_FRACTION = 0.7; // card should read as 70% of viewport width once settled
@@ -23,6 +46,7 @@ interface CardEntry {
   object: CSS3DObject;
   slotProgress: number;
   index: number;
+  sectionName: string;
 }
 
 export class OverlaySystem {
@@ -55,7 +79,11 @@ export class OverlaySystem {
       // (e.g. the wider Product card), including viewport-relative widths
       // that change continuously on resize, not just at a fixed breakpoint.
       this.cards.forEach((card) => {
-        const measuredWidth = card.el.offsetWidth || currentCardCssWidth();
+        const reference = MOBILE_SCALE_REFERENCE_BY_SECTION[card.sectionName];
+        const useReference = reference !== undefined && window.innerWidth < MOBILE_BREAKPOINT_PX;
+        const measuredWidth = useReference
+          ? reference
+          : card.el.offsetWidth || currentCardCssWidth();
         card.object.scale.setScalar(TARGET_WORLD_WIDTH / measuredWidth);
       });
     });
@@ -67,13 +95,18 @@ export class OverlaySystem {
       const cardEl = section.querySelector<HTMLElement>('.overlay-card');
       if (!cardEl) return;
 
+      const sectionName = section.getAttribute('data-section') || '';
+      const reference = MOBILE_SCALE_REFERENCE_BY_SECTION[sectionName];
+      const useReference = reference !== undefined && window.innerWidth < MOBILE_BREAKPOINT_PX;
       const object = new CSS3DObject(cardEl);
-      const measuredWidth = cardEl.offsetWidth || currentCardCssWidth();
+      const measuredWidth = useReference
+        ? reference
+        : cardEl.offsetWidth || currentCardCssWidth();
       const baseScale = TARGET_WORLD_WIDTH / measuredWidth;
       object.scale.setScalar(baseScale);
       this.scene.add(object);
 
-      this.cards.push({ el: cardEl, object, slotProgress: i * this.step, index: i });
+      this.cards.push({ el: cardEl, object, slotProgress: i * this.step, index: i, sectionName });
     });
 
     document.documentElement.style.overflow = 'hidden';
