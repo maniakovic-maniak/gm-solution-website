@@ -602,8 +602,8 @@ section[data-section] {
 
 @media (max-width: 640px) {
   .overlay-card {
-    width: 320px;
-    padding: 2.5rem 1.5rem;
+    width: 92vw;
+    padding: 2rem 1rem;
   }
 
   .overlay-card h1, .overlay-card h2 {
