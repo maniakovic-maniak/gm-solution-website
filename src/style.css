@@ -1190,7 +1190,7 @@ section[data-section] {
   min-width: 0;
   border: 1px solid rgba(233, 237, 245, 0.15);
   border-radius: 0;
-  padding: 1.1rem;
+  padding: 1.1rem 1.2rem;
 }
 
 .compare-panel__heading {
@@ -1383,6 +1383,7 @@ section[data-section] {
   .overlay-card--security { width: 96vw; padding-left: 0.6rem; padding-right: 0.6rem; }
   .security-grid { grid-template-columns: 1fr; }
   .security-item:nth-child(3n) { border-right: 1px solid rgba(233, 237, 245, 0.15); }
+  .security-item:nth-last-child(-n+3) { border-bottom: 1px solid rgba(233, 237, 245, 0.15); }
   .security-item:last-child { border-bottom: none; }
 }
 
