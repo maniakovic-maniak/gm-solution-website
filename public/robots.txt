@@ -1,0 +1,16 @@
+# ==========================================
+# PlsFx Robots.txt
+# ==========================================
+
+User-agent: *
+Allow: /
+
+# Block sensitive or unnecessary paths from being crawled
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+Disallow: /tmp/
+Disallow: /*.json$
+
+# Direct crawlers to your sitemap
+Sitemap: https://plsfx.ai/sitemap.xml
