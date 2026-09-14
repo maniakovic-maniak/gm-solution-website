@@ -21,7 +21,7 @@ export function setupNav(controls: ScrollEngineControls) {
   const wordmark = document.createElement('img');
   wordmark.className = 'site-nav__wordmark';
   wordmark.src = '/logo.png';
-  wordmark.alt = 'GM-Solutions';
+  wordmark.alt = 'PlsFx';
   nav.appendChild(wordmark);
 
   // Desktop link row (unchanged behavior, hidden via CSS below the mobile breakpoint)
