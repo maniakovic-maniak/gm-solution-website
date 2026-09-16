@@ -1,9 +1,9 @@
 import { gsap } from 'gsap';
-import { buildSubmissionFormPage } from './submissionForm';
+import { buildSubmissionFormPage, buildHealthCheckPage } from './submissionForm';
 
 const API_BASE = 'https://plsfx.ai/fm-validator';
 const CLOSE_MAGNETIC_STRENGTH = 0.4;
-const PAGE_COUNT = 2;
+const PAGE_COUNT = 3;
 
 export interface DemoModal {
   open: () => void;
@@ -26,7 +26,8 @@ export function setupDemoModal(): DemoModal {
 
       <div class="demo-tabs">
         <button class="demo-tab is-active" type="button" data-index="0">Submission Form</button>
-        <button class="demo-tab-link" type="button" data-index="1">or Request a Demo</button>
+        <button class="demo-tab demo-tab--healthcheck" type="button" data-index="1">Model Health-Check<span class="demo-tab__badge">Free</span></button>
+        <button class="demo-tab-link" type="button" data-index="2">or Request a Demo</button>
       </div>
 
       <div class="demo-track-viewport">
@@ -57,9 +58,31 @@ export function setupDemoModal(): DemoModal {
 
   const page0 = document.createElement('div');
   page0.className = 'demo-page';
-  const submissionPage = buildSubmissionFormPage();
+  const submissionPage = buildSubmissionFormPage(() => {
+    // The user removed the file on the Submission Form tab -- the same
+    // underlying file is conceptually "the" upload across both tabs, so
+    // clear Health-Check's copy too. clearFile() skips its own
+    // onFileCleared notification, so this can't bounce back and forth.
+    healthCheck.clearFile();
+  });
   page0.appendChild(submissionPage.element);
   track.appendChild(page0);
+
+  const healthCheckPage = document.createElement('div');
+  healthCheckPage.className = 'demo-page';
+  const healthCheck = buildHealthCheckPage(
+    (file, storedAs, priceData) => {
+      submissionPage.prefillFromHealthCheck(file, storedAs, priceData);
+      goTo(0);
+    },
+    () => {
+      // Same in reverse -- removed on Health-Check, so clear Submission
+      // Form's copy too.
+      submissionPage.clearFile();
+    }
+  );
+  healthCheckPage.appendChild(healthCheck.element);
+  track.appendChild(healthCheckPage);
 
   const page1 = document.createElement('div');
   page1.className = 'demo-page';

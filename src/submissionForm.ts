@@ -57,9 +57,15 @@ export interface SubmissionFormPage {
   element: HTMLElement;
   hasInput: () => boolean;
   reset: () => void;
+  clearFile: () => void;
+  prefillFromHealthCheck: (
+    file: File,
+    storedAsValue: string,
+    priceData: { uniqueFormulaTotal: number; fscoreDist: { Low: number; Moderate: number; High: number; Critical: number }; priceTotal: number }
+  ) => void;
 }
 
-export function buildSubmissionFormPage(): SubmissionFormPage {
+export function buildSubmissionFormPage(onFileCleared?: () => void): SubmissionFormPage {
   const page = document.createElement('div');
   page.className = 'subform';
 
@@ -176,7 +182,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
           <div class="subform-summary-row"><span>Low</span><span class="subform-val subform-band-low">-</span></div>
           <div class="subform-summary-row"><span>Moderate</span><span class="subform-val subform-band-moderate">-</span></div>
           <div class="subform-summary-row"><span>High</span><span class="subform-val subform-band-high">-</span></div>
-          <div class="subform-summary-row"><span>Critical</span><span class="subform-val subform-band-critical">-</span></div>
+          <div class="subform-summary-row"><span>Very High</span><span class="subform-val subform-band-critical">-</span></div>
         </div>
         <div class="subform-summary-row"><span>Subtotal</span><span class="subform-val subform-subtotal">-</span></div>
         <div class="subform-summary-row subform-discount-row" hidden><span>Discount</span><span class="subform-val subform-discount">-</span></div>
@@ -242,6 +248,7 @@ export function buildSubmissionFormPage(): SubmissionFormPage {
   const orderIdEl = page.querySelector('.subform-order-id') as HTMLElement;
 
   let fileVerified = false;
+  let prefilledFromHealthCheck = false;
   let storedAs: string | null = null;
   let quotedGrandTotal: number | null = null;
   let lastPriceData: { priceTotal: number; fscoreDist: any; uniqueFormulaTotal: number } | null = null;
@@ -1416,6 +1423,7 @@ South Wales.</p>
       recalculateSummary();
 
       fileVerified = true;
+      prefilledFromHealthCheck = false;
       checkReady();
     } catch (err) {
       hidePopups();
@@ -1510,7 +1518,7 @@ South Wales.</p>
     }
   });
 
-  function resetFile() {
+  function resetFile(notify: boolean = true) {
     fileVerified = false;
     storedAs = null;
     quotedGrandTotal = null;
@@ -1528,6 +1536,8 @@ South Wales.</p>
     summary.style.display = 'none';
     fileInput.value = '';
     checkReady();
+    if (notify && prefilledFromHealthCheck) onFileCleared?.();
+    prefilledFromHealthCheck = false;
   }
 
   dropzone.addEventListener('click', () => fileInput.click());
@@ -1539,7 +1549,7 @@ South Wales.</p>
   fileInput.addEventListener('change', () => {
     if (fileInput.files && fileInput.files[0]) handleFile(fileInput.files[0]);
   });
-  filePillRemove.addEventListener('click', resetFile);
+  filePillRemove.addEventListener('click', () => resetFile(true));
 
   dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -1646,5 +1656,401 @@ South Wales.</p>
     checkReady();
   }
 
-  return { element: page, hasInput, reset };
+  // Called externally (from the Model Health-Check tab) when its own
+  // upload already succeeded there -- populates the exact same UI state
+  // handleFile's success path does, but skips the actual verify-upload /
+  // unique-formulas API calls entirely, since Health-Check already has a
+  // verified storedAs reference and real price data from its own run.
+  function prefillFromHealthCheck(
+    file: File,
+    storedAsValue: string,
+    priceData: { uniqueFormulaTotal: number; fscoreDist: { Low: number; Moderate: number; High: number; Critical: number }; priceTotal: number }
+  ) {
+    storedAs = storedAsValue;
+    filePillName.textContent = file.name;
+    filePillSize.textContent = formatFileSize(file.size);
+    filePill.style.display = 'flex';
+    dropzone.style.display = 'none';
+    mobileUploadBtn.style.display = 'none';
+    summary.style.display = 'block';
+
+    ufCount.textContent = String(priceData.uniqueFormulaTotal);
+    bandLow.textContent = String(priceData.fscoreDist.Low);
+    bandModerate.textContent = String(priceData.fscoreDist.Moderate);
+    bandHigh.textContent = String(priceData.fscoreDist.High);
+    bandCritical.textContent = String(priceData.fscoreDist.Critical);
+    lastPriceData = { priceTotal: priceData.priceTotal, fscoreDist: priceData.fscoreDist, uniqueFormulaTotal: priceData.uniqueFormulaTotal };
+    appliedPromo = null;
+    promoInput.value = '';
+    promoApplyBtn.disabled = true;
+    promoApplyBtn.textContent = 'Apply';
+    promoApplyBtn.classList.remove('subform-promo-apply--applied');
+    promoErrorEl.hidden = true;
+    recalculateSummary();
+
+    fileVerified = true;
+    prefilledFromHealthCheck = true;
+    checkReady();
+  }
+
+  return { element: page, hasInput, reset, clearFile: () => resetFile(false), prefillFromHealthCheck };
+}
+
+export interface HealthCheckPage {
+  element: HTMLElement;
+  clearFile: () => void;
+}
+
+// Model Health-Check page: reuses the exact same dropzone markup/CSS
+// classes as the main Submission Form so it inherits that styling for
+// free. All loading states render inline inside the dropzone itself
+// (uploading %, cooking, complete) rather than via the shared modal
+// popup the main Submission Form uses -- per the v3 spec, Health-Check's
+// progress states are deliberately inline, not a popup. Errors are the
+// one exception and do use a popup, matching the main form's pattern.
+export function buildHealthCheckPage(
+  onSubmitForReview: (
+    file: File,
+    storedAs: string,
+    priceData: { uniqueFormulaTotal: number; fscoreDist: { Low: number; Moderate: number; High: number; Critical: number }; priceTotal: number }
+  ) => void,
+  onFileCleared?: () => void
+): HealthCheckPage {
+  const page = document.createElement('div');
+  page.className = 'healthcheck';
+
+  page.innerHTML = `
+    <div class="demo-modal__header">
+      <p class="subform-intro"><strong>Free health-check. Zero judgement.</strong> Formula counts, circular references, hardcodes, a complexity score and a fixed full-review price - in about 30 seconds.</p>
+      <p class="subform-intro">Why try it? Key-person risk applies to models too, and "it ties out" isn't a control and the scan costs exactly nothing.</p>
+    </div>
+
+    <div class="healthcheck-row">
+      <div class="healthcheck-upload-col">
+        <div class="subform-section-title">Upload &amp; Check Your Model*</div>
+        <div class="subform-dropzone" tabindex="0"></div>
+        <button class="subform-mobile-upload" type="button">Upload your Excel file</button>
+        <input type="file" class="subform-file-input" accept=".xlsx,.xlsm,.xlsb,.xls" hidden />
+      </div>
+
+      <div class="healthcheck-score-col">
+        <div class="subform-section-title">Basic structural score:</div>
+
+        <div class="healthcheck-box">
+          <div class="healthcheck-box__label">Unique formulas total:</div>
+          <div class="healthcheck-box__value healthcheck-uf-total"></div>
+        </div>
+
+        <div class="healthcheck-box">
+          <div class="healthcheck-box__label-row">
+            <span class="healthcheck-box__label">F-Score breakdown:</span>
+            <button class="healthcheck-fscore-info" type="button" aria-label="What is F-Score?">?</button>
+          </div>
+          <div class="healthcheck-fscore-breakdown" style="display:none">
+            <div class="healthcheck-fscore-row"><span>Low:</span><span class="healthcheck-band-low">-</span></div>
+            <div class="healthcheck-fscore-row"><span>Moderate:</span><span class="healthcheck-band-moderate">-</span></div>
+            <div class="healthcheck-fscore-row"><span>High:</span><span class="healthcheck-band-high">-</span></div>
+            <div class="healthcheck-fscore-row"><span>Very High:</span><span class="healthcheck-band-veryhigh">-</span></div>
+          </div>
+        </div>
+
+        <div class="healthcheck-box">
+          <div class="healthcheck-box__label">Price total, inc. GST:</div>
+          <div class="healthcheck-box__value healthcheck-price-total"></div>
+        </div>
+
+        <button class="healthcheck-submit" type="button" disabled>SUBMIT FOR REVIEW</button>
+      </div>
+    </div>
+
+    <p class="healthcheck-disclaimer">*Structural scan only - no formula recalculation at this stage. Files are cleared on the same retention sweep as paid reviews. Nothing lingers.</p>
+  `;
+
+  const dropzone = page.querySelector('.subform-dropzone') as HTMLElement;
+  const mobileUploadBtn = page.querySelector('.subform-mobile-upload') as HTMLButtonElement;
+  const fileInput = page.querySelector('.subform-file-input') as HTMLInputElement;
+  const submitBtn = page.querySelector('.healthcheck-submit') as HTMLButtonElement;
+  const ufTotalEl = page.querySelector('.healthcheck-uf-total') as HTMLElement;
+  const bandLowEl = page.querySelector('.healthcheck-band-low') as HTMLElement;
+  const bandModerateEl = page.querySelector('.healthcheck-band-moderate') as HTMLElement;
+  const bandHighEl = page.querySelector('.healthcheck-band-high') as HTMLElement;
+  const bandVeryHighEl = page.querySelector('.healthcheck-band-veryhigh') as HTMLElement;
+  const priceTotalEl = page.querySelector('.healthcheck-price-total') as HTMLElement;
+
+  let verifiedFile: File | null = null;
+  let verifiedStoredAs: string | null = null;
+  let verifiedPriceData: { uniqueFormulaTotal: number; fscoreDist: { Low: number; Moderate: number; High: number; Critical: number }; priceTotal: number } | null = null;
+
+  const IDLE_HTML = `
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
+    <span class="subform-dropzone__main">Drag and drop your file here</span>
+    <span class="subform-dropzone__sub">or</span>
+    <button class="subform-browse" type="button">Browse files</button>
+    <span class="subform-dropzone__hint">.xlsx · .xlsm · .xlsb · .xls · max 20 MB</span>
+  `;
+
+  const fscorePopup = document.createElement('div');
+  fscorePopup.className = 'popup-overlay';
+  fscorePopup.innerHTML = `
+    <div class="fscore-popup-card">
+      <button class="popup-close" type="button" aria-label="Close">&times;</button>
+      <h3 class="fscore-popup-title">What is F-Score?</h3>
+      <p class="fscore-popup-lead">The F-score measures formula complexity and review risk - every formula in the model receives one automatically. Higher scores warrant closer review.</p>
+      <div class="fscore-popup-table-wrap">
+        <table class="fscore-popup-table">
+          <thead>
+            <tr><th>F-Score</th><th>Band</th><th>Treatment</th></tr>
+          </thead>
+          <tbody>
+            <tr class="fscore-band-low"><td>0-3</td><td>Low</td><td>Ordinary complexity. Review through normal formula testing.</td></tr>
+            <tr class="fscore-band-moderate"><td>4-7</td><td>Moderate</td><td>Review for logic clarity, input linkage and copy-across consistency.</td></tr>
+            <tr class="fscore-band-high"><td>8-12</td><td>High</td><td>Inspect carefully. Consider simplification or helper rows.</td></tr>
+            <tr class="fscore-band-veryhigh"><td>13+</td><td>Very High</td><td>Needs detailed review. Consider simplifying or splitting into helper rows.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fscore-popup-foot">Same formula count, different price? That's the F-score at work - verifying one model can genuinely be harder than another. Your fixed price, incl. GST, is always shown before payment.</p>
+      <button class="fscore-popup-ok" type="button">Got it</button>
+    </div>
+  `;
+  document.body.appendChild(fscorePopup);
+  const fscoreCloseBtn = fscorePopup.querySelector('.popup-close') as HTMLButtonElement;
+  const fscoreOkBtn = fscorePopup.querySelector('.fscore-popup-ok') as HTMLButtonElement;
+  fscoreCloseBtn.addEventListener('click', () => fscorePopup.classList.remove('show'));
+  fscoreOkBtn.addEventListener('click', () => fscorePopup.classList.remove('show'));
+  fscorePopup.addEventListener('click', (e) => {
+    if (e.target === fscorePopup) fscorePopup.classList.remove('show');
+  });
+
+  const errorPopup = document.createElement('div');
+  errorPopup.className = 'popup-overlay';
+  errorPopup.innerHTML = `
+    <div class="popup-card popup-card--wide">
+      <button class="popup-close" type="button" aria-label="Close">&times;</button>
+      <div class="popup-error-icon">!</div>
+      <div class="popup-error-text"></div>
+    </div>
+  `;
+  document.body.appendChild(errorPopup);
+  const errorText = errorPopup.querySelector('.popup-error-text') as HTMLElement;
+  const errorCloseBtn = errorPopup.querySelector('.popup-close') as HTMLButtonElement;
+  function showError(message: string) {
+    errorText.textContent = message;
+    errorPopup.classList.add('show');
+  }
+  errorCloseBtn.addEventListener('click', () => errorPopup.classList.remove('show'));
+
+  function onDropzoneClick() {
+    fileInput.click();
+  }
+
+  function wireIdleState() {
+    stopCookingDots();
+    dropzone.innerHTML = IDLE_HTML;
+    const browseBtn = dropzone.querySelector('.subform-browse') as HTMLButtonElement;
+    dropzone.addEventListener('click', onDropzoneClick);
+    browseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+  }
+
+  function renderUploading(percent: number) {
+    // Only rebuild the DOM once, on the transition into this state -- on
+    // every subsequent call (upload progress can fire many times a
+    // second), just update the percentage text in place. Replacing the
+    // <img> element itself on every tick was restarting the cauldron's
+    // animation from frame zero each time, so it visually never got past
+    // its first fraction of a cycle -- looking "stuck"/erratic rather
+    // than actually playing.
+    const percentEl = dropzone.querySelector('.healthcheck-uploading-percent') as HTMLElement | null;
+    if (percentEl) {
+      percentEl.textContent = `${percent}%`;
+      return;
+    }
+    dropzone.removeEventListener('click', onDropzoneClick);
+    dropzone.innerHTML = `
+      <img src="/cauldron-loader.svg" width="84" height="84" alt="" />
+      <span class="healthcheck-loading-label">Uploading... <span class="healthcheck-uploading-percent">${percent}%</span></span>
+    `;
+  }
+
+  let cookingDotsTimer: ReturnType<typeof setInterval> | null = null;
+  function startCookingDots() {
+    stopCookingDots();
+    let count = 0;
+    cookingDotsTimer = setInterval(() => {
+      count = (count + 1) % 4;
+      const dots = '.'.repeat(count);
+      const dotsEl = dropzone.querySelector('.popup-loading-dots') as HTMLElement | null;
+      if (dotsEl) dotsEl.textContent = dots;
+      ufTotalEl.textContent = dots || '-';
+      bandLowEl.textContent = dots || '-';
+      bandModerateEl.textContent = dots || '-';
+      bandHighEl.textContent = dots || '-';
+      bandVeryHighEl.textContent = dots || '-';
+      priceTotalEl.textContent = dots || '-';
+    }, 400);
+  }
+  function stopCookingDots() {
+    if (cookingDotsTimer) {
+      clearInterval(cookingDotsTimer);
+      cookingDotsTimer = null;
+    }
+  }
+
+  function renderCooking() {
+    dropzone.innerHTML = `
+      <img src="/cauldron-loader.svg" width="84" height="84" alt="" />
+      <span class="healthcheck-loading-label">Cooking<span class="popup-loading-dots"></span></span>
+    `;
+    startCookingDots();
+  }
+
+  // Real 24-frame, 1200ms single loop of PlsFx-logo-animated.gif -- the
+  // file's own loop metadata is infinite (a real GIF-format limitation,
+  // not fixable by re-encoding without corrupting frames -- confirmed the
+  // hard way), so "play exactly once" is handled here in JS: swap to the
+  // true final frame (a separate static PNG) right when one loop
+  // finishes, rather than relying on the GIF's own loop count, which
+  // browsers interpret inconsistently anyway.
+  const GIF_SINGLE_LOOP_MS = 24 * 50;
+
+  function renderComplete(file: File) {
+    stopCookingDots();
+    dropzone.innerHTML = `
+      <div class="healthcheck-complete-logo-wrap">
+        <img class="healthcheck-complete-gif" src="/PlsFx-logo-animated.gif" width="160" alt="" />
+        <span class="healthcheck-loading-label">Upload complete. The score is ready.</span>
+      </div>
+      <div class="subform-file-pill healthcheck-complete-file">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+        <span class="subform-file-pill__name"></span>
+        <span class="subform-file-pill__size"></span>
+        <button class="subform-file-pill__remove" type="button" aria-label="Remove file">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
+        </button>
+      </div>
+    `;
+    (dropzone.querySelector('.subform-file-pill__name') as HTMLElement).textContent = file.name;
+    (dropzone.querySelector('.subform-file-pill__size') as HTMLElement).textContent = formatFileSize(file.size);
+    (dropzone.querySelector('.subform-file-pill__remove') as HTMLButtonElement).addEventListener('click', (e) => {
+      e.stopPropagation();
+      resetHealthCheck(true);
+    });
+
+    const gifEl = dropzone.querySelector('.healthcheck-complete-gif') as HTMLImageElement;
+    setTimeout(() => {
+      gifEl.src = '/plsfx-logo-final-frame.png';
+    }, GIF_SINGLE_LOOP_MS);
+  }
+
+  function resetHealthCheck(notify: boolean = true) {
+    const breakdownEl = page.querySelector('.healthcheck-fscore-breakdown') as HTMLElement;
+    breakdownEl.style.display = 'none';
+    ufTotalEl.textContent = '';
+    bandLowEl.textContent = '';
+    bandModerateEl.textContent = '';
+    bandHighEl.textContent = '';
+    bandVeryHighEl.textContent = '';
+    priceTotalEl.textContent = '';
+    submitBtn.disabled = true;
+    verifiedFile = null;
+    verifiedStoredAs = null;
+    verifiedPriceData = null;
+    fileInput.value = '';
+    wireIdleState();
+    if (notify) onFileCleared?.();
+  }
+
+  async function handleHealthCheckFile(file: File) {
+    const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      showError("This file type isn't supported. Please upload an .xlsx, .xlsm, .xlsb, or .xls file.");
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      showError('This file is larger than the 20 MB limit. Please upload a smaller file.');
+      return;
+    }
+
+    renderUploading(0);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const verifyData = await uploadWithProgress(`${API_BASE}/api/verify-upload`, formData, (percent) => {
+        if (percent >= 100) {
+          renderCooking();
+        } else {
+          renderUploading(percent);
+        }
+      });
+
+      if (!verifyData.passed) {
+        wireIdleState();
+        showError(verifyData.message || 'This file could not be verified. Please check it and try again.');
+        return;
+      }
+
+      const priceRes = await fetch(`${API_BASE}/api/unique-formulas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storedAs: verifyData.storedAs }),
+      });
+      const priceData = await priceRes.json();
+
+      if (priceData.status !== 'success') {
+        wireIdleState();
+        showError(priceData.message || 'Could not estimate pricing for this file. Please try again.');
+        return;
+      }
+
+      ufTotalEl.textContent = String(priceData.uniqueFormulaTotal);
+      bandLowEl.textContent = String(priceData.fscoreDist.Low);
+      bandModerateEl.textContent = String(priceData.fscoreDist.Moderate);
+      bandHighEl.textContent = String(priceData.fscoreDist.High);
+      bandVeryHighEl.textContent = String(priceData.fscoreDist.Critical);
+      priceTotalEl.textContent = formatDollars(priceData.priceTotal);
+      const breakdownEl = page.querySelector('.healthcheck-fscore-breakdown') as HTMLElement;
+      breakdownEl.style.display = '';
+      submitBtn.disabled = false;
+
+      verifiedFile = file;
+      verifiedStoredAs = verifyData.storedAs;
+      verifiedPriceData = { uniqueFormulaTotal: priceData.uniqueFormulaTotal, fscoreDist: priceData.fscoreDist, priceTotal: priceData.priceTotal };
+      renderComplete(file);
+    } catch (err) {
+      wireIdleState();
+      showError('Could not connect to the server. Please check your connection and try again.');
+    }
+  }
+
+  submitBtn.addEventListener('click', () => {
+    if (verifiedFile && verifiedStoredAs && verifiedPriceData) {
+      onSubmitForReview(verifiedFile, verifiedStoredAs, verifiedPriceData);
+    }
+  });
+
+  const fscoreInfoBtn = page.querySelector('.healthcheck-fscore-info') as HTMLButtonElement;
+  fscoreInfoBtn.addEventListener('click', () => fscorePopup.classList.add('show'));
+
+  wireIdleState();
+  mobileUploadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files && fileInput.files[0]) handleHealthCheckFile(fileInput.files[0]);
+  });
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('is-dragover');
+  });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('is-dragover'));
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('is-dragover');
+    const file = e.dataTransfer?.files[0];
+    if (file) handleHealthCheckFile(file);
+  });
+
+  return { element: page, clearFile: () => resetHealthCheck(false) };
 }
