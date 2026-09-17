@@ -211,6 +211,12 @@ export function setupDemoModal(): DemoModal {
     document.body.classList.remove('modal-open');
     quitPopup.classList.remove('show');
     submissionPage.reset();
+    // reset() cascades to clear Health-Check too, but only when Submission
+    // Form's current file actually originated from a Health-Check handoff.
+    // A file uploaded directly on Health-Check that was never submitted
+    // isn't covered by that chain -- clear it explicitly here so closing
+    // the dialogue always leaves both tabs genuinely fresh for reopen.
+    healthCheck.clearFile();
     demoForm.reset();
     demoForm.hidden = false;
     demoSuccess.hidden = true;
