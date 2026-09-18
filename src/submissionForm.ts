@@ -280,8 +280,10 @@ export function buildSubmissionFormPage(onFileCleared?: () => void): SubmissionF
   tcsPopup.className = 'popup-overlay';
   tcsPopup.innerHTML = `
     <div class="tcs-popup-card">
-      <button class="popup-close" type="button" aria-label="Close">&times;</button>
-      <div class="tcs-popup-header">Terms &amp; Conditions</div>
+      <div class="tcs-popup-header">
+        <span class="tcs-popup-header__title">Terms &amp; Conditions</span>
+        <button class="popup-close tcs-popup-header__close" type="button" aria-label="Close">&times;</button>
+      </div>
       <div class="tcs-popup-body">
 <p>These Terms govern each Order for the Service. Please read them
 before you create an account, pay for an Order or upload a model. By
