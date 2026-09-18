@@ -1710,18 +1710,20 @@ South Wales.</p>
   return { element: page, hasInput, reset, clearFile: () => resetFile(false), prefillFromHealthCheck };
 }
 
+
 export interface HealthCheckPage {
   element: HTMLElement;
   clearFile: () => void;
 }
 
-// Model Health-Check page: reuses the exact same dropzone markup/CSS
-// classes as the main Submission Form so it inherits that styling for
-// free. All loading states render inline inside the dropzone itself
-// (uploading %, cooking, complete) rather than via the shared modal
-// popup the main Submission Form uses -- per the v3 spec, Health-Check's
-// progress states are deliberately inline, not a popup. Errors are the
-// one exception and do use a popup, matching the main form's pattern.
+// Model Health-Check page: reuses the exact same upload dropzone, popup
+// (Uploading %/Cooking), and file-pill-row pattern as the main Submission
+// Form -- copied deliberately rather than reinvented, since that pattern
+// is proven and already works correctly on both desktop and mobile (the
+// file-pill-row lives outside the dropzone, so it stays visible even when
+// the dropzone itself is hidden on narrow screens). Only the three
+// structural-score result boxes and the F-score popup are Health-Check's
+// own, since Submission Form has no equivalent for either.
 export function buildHealthCheckPage(
   onSubmitForReview: (
     file: File,
@@ -1742,9 +1744,32 @@ export function buildHealthCheckPage(
     <div class="healthcheck-row">
       <div class="healthcheck-upload-col">
         <div class="subform-section-title">Upload &amp; Check Your Model*</div>
-        <div class="subform-dropzone" tabindex="0"></div>
+
+        <div class="subform-dropzone" tabindex="0">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
+          <span class="subform-dropzone__main">Drag and drop your file here</span>
+          <span class="subform-dropzone__sub">or</span>
+          <button class="subform-browse" type="button">Browse files</button>
+          <span class="subform-dropzone__hint">.xlsx · .xlsm · .xlsb · .xls · max 20 MB</span>
+        </div>
+
         <button class="subform-mobile-upload" type="button">Upload your Excel file</button>
+
         <input type="file" class="subform-file-input" accept=".xlsx,.xlsm,.xlsb,.xls" hidden />
+
+        <div class="subform-file-pill-row" style="display:none">
+          <div class="subform-file-pill">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+            <span class="subform-file-pill__name"></span>
+            <span class="subform-file-pill__size"></span>
+            <button class="subform-file-pill__remove" type="button" aria-label="Remove file">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
+            </button>
+          </div>
+          <span class="subform-file-pill__tick">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+        </div>
       </div>
 
       <div class="healthcheck-score-col">
@@ -1781,8 +1806,13 @@ export function buildHealthCheckPage(
   `;
 
   const dropzone = page.querySelector('.subform-dropzone') as HTMLElement;
+  const browseBtn = page.querySelector('.subform-browse') as HTMLButtonElement;
   const mobileUploadBtn = page.querySelector('.subform-mobile-upload') as HTMLButtonElement;
   const fileInput = page.querySelector('.subform-file-input') as HTMLInputElement;
+  const filePill = page.querySelector('.subform-file-pill-row') as HTMLElement;
+  const filePillName = page.querySelector('.subform-file-pill__name') as HTMLElement;
+  const filePillSize = page.querySelector('.subform-file-pill__size') as HTMLElement;
+  const filePillRemove = page.querySelector('.subform-file-pill__remove') as HTMLButtonElement;
   const submitBtn = page.querySelector('.healthcheck-submit') as HTMLButtonElement;
   const ufTotalEl = page.querySelector('.healthcheck-uf-total') as HTMLElement;
   const bandLowEl = page.querySelector('.healthcheck-band-low') as HTMLElement;
@@ -1790,18 +1820,34 @@ export function buildHealthCheckPage(
   const bandHighEl = page.querySelector('.healthcheck-band-high') as HTMLElement;
   const bandVeryHighEl = page.querySelector('.healthcheck-band-veryhigh') as HTMLElement;
   const priceTotalEl = page.querySelector('.healthcheck-price-total') as HTMLElement;
+  const breakdownEl = page.querySelector('.healthcheck-fscore-breakdown') as HTMLElement;
 
   let verifiedFile: File | null = null;
   let verifiedStoredAs: string | null = null;
   let verifiedPriceData: { uniqueFormulaTotal: number; fscoreDist: { Low: number; Moderate: number; High: number; Critical: number }; priceTotal: number } | null = null;
 
-  const IDLE_HTML = `
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
-    <span class="subform-dropzone__main">Drag and drop your file here</span>
-    <span class="subform-dropzone__sub">or</span>
-    <button class="subform-browse" type="button">Browse files</button>
-    <span class="subform-dropzone__hint">.xlsx · .xlsm · .xlsb · .xls · max 20 MB</span>
+  // ── Shared-pattern loading popup, copied from Submission Form ──
+  const loadingPopup = document.createElement('div');
+  loadingPopup.className = 'popup-overlay';
+  loadingPopup.innerHTML = `
+    <div class="popup-card">
+      <img class="popup-cauldron-img" src="/cauldron-loader.svg" width="100" height="100" alt="" />
+      <div class="popup-loading-text"><span class="popup-loading-label">Cooking</span><span class="popup-loading-dots"></span></div>
+      <div class="popup-loading-percent"></div>
+    </div>
   `;
+  document.body.appendChild(loadingPopup);
+
+  const errorPopup = document.createElement('div');
+  errorPopup.className = 'popup-overlay';
+  errorPopup.innerHTML = `
+    <div class="popup-card popup-card--wide">
+      <button class="popup-close" type="button" aria-label="Close">&times;</button>
+      <div class="popup-error-icon">!</div>
+      <div class="popup-error-text"></div>
+    </div>
+  `;
+  document.body.appendChild(errorPopup);
 
   const fscorePopup = document.createElement('div');
   fscorePopup.className = 'popup-overlay';
@@ -1828,142 +1874,61 @@ export function buildHealthCheckPage(
     </div>
   `;
   document.body.appendChild(fscorePopup);
+
+  const errorText = errorPopup.querySelector('.popup-error-text') as HTMLElement;
+  const errorCloseBtn = errorPopup.querySelector('.popup-close') as HTMLButtonElement;
   const fscoreCloseBtn = fscorePopup.querySelector('.popup-close') as HTMLButtonElement;
   const fscoreOkBtn = fscorePopup.querySelector('.fscore-popup-ok') as HTMLButtonElement;
+  const fscoreInfoBtn = page.querySelector('.healthcheck-fscore-info') as HTMLButtonElement;
+
+  let loadingDotsTimer: ReturnType<typeof setInterval> | null = null;
+  function startLoadingDots() {
+    const dotsEl = loadingPopup.querySelector('.popup-loading-dots') as HTMLElement;
+    let count = 0;
+    dotsEl.textContent = '';
+    loadingDotsTimer = setInterval(() => {
+      count = (count + 1) % 4;
+      dotsEl.textContent = '.'.repeat(count);
+    }, 400);
+  }
+  function stopLoadingDots() {
+    if (loadingDotsTimer) {
+      clearInterval(loadingDotsTimer);
+      loadingDotsTimer = null;
+    }
+  }
+  function setLoadingPercent(percent: number | null) {
+    const percentEl = loadingPopup.querySelector('.popup-loading-percent') as HTMLElement;
+    percentEl.textContent = percent === null ? '' : `${percent}%`;
+  }
+  function setLoadingLabel(text: string) {
+    const labelEl = loadingPopup.querySelector('.popup-loading-label') as HTMLElement;
+    labelEl.textContent = text;
+  }
+  function showPopup(el: HTMLElement) {
+    [loadingPopup, errorPopup, fscorePopup].forEach((p) => p.classList.remove('show'));
+    el.classList.add('show');
+    stopLoadingDots();
+    if (el === loadingPopup) startLoadingDots();
+  }
+  function hidePopups() {
+    [loadingPopup, errorPopup, fscorePopup].forEach((p) => p.classList.remove('show'));
+    stopLoadingDots();
+    setLoadingPercent(null);
+  }
+  function showError(message: string) {
+    errorText.textContent = message;
+    showPopup(errorPopup);
+  }
+  errorCloseBtn.addEventListener('click', () => errorPopup.classList.remove('show'));
   fscoreCloseBtn.addEventListener('click', () => fscorePopup.classList.remove('show'));
   fscoreOkBtn.addEventListener('click', () => fscorePopup.classList.remove('show'));
   fscorePopup.addEventListener('click', (e) => {
     if (e.target === fscorePopup) fscorePopup.classList.remove('show');
   });
-
-  const errorPopup = document.createElement('div');
-  errorPopup.className = 'popup-overlay';
-  errorPopup.innerHTML = `
-    <div class="popup-card popup-card--wide">
-      <button class="popup-close" type="button" aria-label="Close">&times;</button>
-      <div class="popup-error-icon">!</div>
-      <div class="popup-error-text"></div>
-    </div>
-  `;
-  document.body.appendChild(errorPopup);
-  const errorText = errorPopup.querySelector('.popup-error-text') as HTMLElement;
-  const errorCloseBtn = errorPopup.querySelector('.popup-close') as HTMLButtonElement;
-  function showError(message: string) {
-    errorText.textContent = message;
-    errorPopup.classList.add('show');
-  }
-  errorCloseBtn.addEventListener('click', () => errorPopup.classList.remove('show'));
-
-  function onDropzoneClick() {
-    fileInput.click();
-  }
-
-  function wireIdleState() {
-    stopCookingDots();
-    mobileUploadBtn.textContent = 'Upload your Excel file';
-    dropzone.innerHTML = IDLE_HTML;
-    const browseBtn = dropzone.querySelector('.subform-browse') as HTMLButtonElement;
-    dropzone.addEventListener('click', onDropzoneClick);
-    browseBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      fileInput.click();
-    });
-  }
-
-  function renderUploading(percent: number) {
-    // Only rebuild the DOM once, on the transition into this state -- on
-    // every subsequent call (upload progress can fire many times a
-    // second), just update the percentage text in place. Replacing the
-    // <img> element itself on every tick was restarting the cauldron's
-    // animation from frame zero each time, so it visually never got past
-    // its first fraction of a cycle -- looking "stuck"/erratic rather
-    // than actually playing.
-    mobileUploadBtn.textContent = `Uploading... ${percent}%`;
-    const percentEl = dropzone.querySelector('.healthcheck-uploading-percent') as HTMLElement | null;
-    if (percentEl) {
-      percentEl.textContent = `${percent}%`;
-      return;
-    }
-    dropzone.removeEventListener('click', onDropzoneClick);
-    dropzone.innerHTML = `
-      <img src="/cauldron-loader.svg" width="84" height="84" alt="" />
-      <span class="healthcheck-loading-label">Uploading... <span class="healthcheck-uploading-percent">${percent}%</span></span>
-    `;
-  }
-
-  let cookingDotsTimer: ReturnType<typeof setInterval> | null = null;
-  function startCookingDots() {
-    stopCookingDots();
-    let count = 0;
-    cookingDotsTimer = setInterval(() => {
-      count = (count + 1) % 4;
-      const dots = '.'.repeat(count);
-      const dotsEl = dropzone.querySelector('.popup-loading-dots') as HTMLElement | null;
-      if (dotsEl) dotsEl.textContent = dots;
-      ufTotalEl.textContent = dots || '-';
-      bandLowEl.textContent = dots || '-';
-      bandModerateEl.textContent = dots || '-';
-      bandHighEl.textContent = dots || '-';
-      bandVeryHighEl.textContent = dots || '-';
-      priceTotalEl.textContent = dots || '-';
-    }, 400);
-  }
-  function stopCookingDots() {
-    if (cookingDotsTimer) {
-      clearInterval(cookingDotsTimer);
-      cookingDotsTimer = null;
-    }
-  }
-
-  function renderCooking() {
-    mobileUploadBtn.textContent = 'Cooking...';
-    dropzone.innerHTML = `
-      <img src="/cauldron-loader.svg" width="84" height="84" alt="" />
-      <span class="healthcheck-loading-label">Cooking<span class="popup-loading-dots"></span></span>
-    `;
-    startCookingDots();
-  }
-
-  // Real 24-frame, 1200ms single loop of PlsFx-logo-animated.gif -- the
-  // file's own loop metadata is infinite (a real GIF-format limitation,
-  // not fixable by re-encoding without corrupting frames -- confirmed the
-  // hard way), so "play exactly once" is handled here in JS: swap to the
-  // true final frame (a separate static PNG) right when one loop
-  // finishes, rather than relying on the GIF's own loop count, which
-  // browsers interpret inconsistently anyway.
-  const GIF_SINGLE_LOOP_MS = 24 * 50;
-
-  function renderComplete(file: File) {
-    stopCookingDots();
-    dropzone.innerHTML = `
-      <div class="healthcheck-complete-logo-wrap">
-        <img class="healthcheck-complete-gif" src="/PlsFx-logo-animated.gif" width="160" alt="" />
-        <span class="healthcheck-loading-label">Upload complete. The score is ready.</span>
-      </div>
-      <div class="subform-file-pill healthcheck-complete-file">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
-        <span class="subform-file-pill__name"></span>
-        <span class="subform-file-pill__size"></span>
-        <button class="subform-file-pill__remove" type="button" aria-label="Remove file">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
-        </button>
-      </div>
-    `;
-    (dropzone.querySelector('.subform-file-pill__name') as HTMLElement).textContent = file.name;
-    (dropzone.querySelector('.subform-file-pill__size') as HTMLElement).textContent = formatFileSize(file.size);
-    (dropzone.querySelector('.subform-file-pill__remove') as HTMLButtonElement).addEventListener('click', (e) => {
-      e.stopPropagation();
-      resetHealthCheck(true);
-    });
-
-    const gifEl = dropzone.querySelector('.healthcheck-complete-gif') as HTMLImageElement;
-    setTimeout(() => {
-      gifEl.src = '/plsfx-logo-final-frame.png';
-    }, GIF_SINGLE_LOOP_MS);
-  }
+  fscoreInfoBtn.addEventListener('click', () => fscorePopup.classList.add('show'));
 
   function resetHealthCheck(notify: boolean = true) {
-    const breakdownEl = page.querySelector('.healthcheck-fscore-breakdown') as HTMLElement;
     breakdownEl.style.display = 'none';
     ufTotalEl.textContent = '';
     bandLowEl.textContent = '';
@@ -1975,9 +1940,10 @@ export function buildHealthCheckPage(
     verifiedFile = null;
     verifiedStoredAs = null;
     verifiedPriceData = null;
+    filePill.style.display = 'none';
+    dropzone.style.display = '';
+    mobileUploadBtn.style.display = '';
     fileInput.value = '';
-    mobileUploadBtn.textContent = 'Upload your Excel file';
-    wireIdleState();
     if (notify) onFileCleared?.();
   }
 
@@ -1992,21 +1958,23 @@ export function buildHealthCheckPage(
       return;
     }
 
-    renderUploading(0);
+    showPopup(loadingPopup);
+    setLoadingLabel('Uploading');
+    setLoadingPercent(0);
 
     try {
       const formData = new FormData();
       formData.append('file', file);
       const verifyData = await uploadWithProgress(`${API_BASE}/api/verify-upload`, formData, (percent) => {
+        setLoadingPercent(percent);
         if (percent >= 100) {
-          renderCooking();
-        } else {
-          renderUploading(percent);
+          setLoadingLabel('Cooking');
+          setLoadingPercent(null);
         }
       });
 
       if (!verifyData.passed) {
-        wireIdleState();
+        hidePopups();
         showError(verifyData.message || 'This file could not be verified. Please check it and try again.');
         return;
       }
@@ -2019,10 +1987,17 @@ export function buildHealthCheckPage(
       const priceData = await priceRes.json();
 
       if (priceData.status !== 'success') {
-        wireIdleState();
+        hidePopups();
         showError(priceData.message || 'Could not estimate pricing for this file. Please try again.');
         return;
       }
+
+      hidePopups();
+      filePillName.textContent = file.name;
+      filePillSize.textContent = formatFileSize(file.size);
+      filePill.style.display = 'flex';
+      dropzone.style.display = 'none';
+      mobileUploadBtn.style.display = 'none';
 
       ufTotalEl.textContent = String(priceData.uniqueFormulaTotal);
       bandLowEl.textContent = String(priceData.fscoreDist.Low);
@@ -2030,34 +2005,29 @@ export function buildHealthCheckPage(
       bandHighEl.textContent = String(priceData.fscoreDist.High);
       bandVeryHighEl.textContent = String(priceData.fscoreDist.Critical);
       priceTotalEl.textContent = formatDollars(priceData.priceTotal);
-      const breakdownEl = page.querySelector('.healthcheck-fscore-breakdown') as HTMLElement;
       breakdownEl.style.display = '';
       submitBtn.disabled = false;
 
       verifiedFile = file;
       verifiedStoredAs = verifyData.storedAs;
       verifiedPriceData = { uniqueFormulaTotal: priceData.uniqueFormulaTotal, fscoreDist: priceData.fscoreDist, priceTotal: priceData.priceTotal };
-      renderComplete(file);
     } catch (err) {
-      wireIdleState();
+      hidePopups();
       showError('Could not connect to the server. Please check your connection and try again.');
     }
   }
 
-  submitBtn.addEventListener('click', () => {
-    if (verifiedFile && verifiedStoredAs && verifiedPriceData) {
-      onSubmitForReview(verifiedFile, verifiedStoredAs, verifiedPriceData);
-    }
+  dropzone.addEventListener('click', () => fileInput.click());
+  browseBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
   });
-
-  const fscoreInfoBtn = page.querySelector('.healthcheck-fscore-info') as HTMLButtonElement;
-  fscoreInfoBtn.addEventListener('click', () => fscorePopup.classList.add('show'));
-
-  wireIdleState();
   mobileUploadBtn.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', () => {
     if (fileInput.files && fileInput.files[0]) handleHealthCheckFile(fileInput.files[0]);
   });
+  filePillRemove.addEventListener('click', () => resetHealthCheck(true));
+
   dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
     dropzone.classList.add('is-dragover');
@@ -2068,6 +2038,12 @@ export function buildHealthCheckPage(
     dropzone.classList.remove('is-dragover');
     const file = e.dataTransfer?.files[0];
     if (file) handleHealthCheckFile(file);
+  });
+
+  submitBtn.addEventListener('click', () => {
+    if (verifiedFile && verifiedStoredAs && verifiedPriceData) {
+      onSubmitForReview(verifiedFile, verifiedStoredAs, verifiedPriceData);
+    }
   });
 
   return { element: page, clearFile: () => resetHealthCheck(false) };
