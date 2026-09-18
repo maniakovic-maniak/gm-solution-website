@@ -1364,6 +1364,11 @@ South Wales.</p>
     showPopup(loadingPopup);
     setLoadingLabel('Uploading');
     setLoadingPercent(0);
+    // The shared loading popup already covers this on desktop, but on
+    // mobile the dropzone (and everything inside it) is hidden entirely --
+    // the mobile upload button is the only visible upload-related element,
+    // so its own text is the only place mobile users see any progress.
+    mobileUploadBtn.textContent = 'Uploading... 0%';
 
     try {
       // ── Step 1: real integrity check (Instance 2) - fast, no pipeline ──
@@ -1377,11 +1382,15 @@ South Wales.</p>
           // so switch the label and drop back to just the animated dots.
           setLoadingLabel('Cooking');
           setLoadingPercent(null);
+          mobileUploadBtn.textContent = 'Cooking...';
+        } else {
+          mobileUploadBtn.textContent = `Uploading... ${percent}%`;
         }
       });
 
       if (!verifyData.passed) {
         hidePopups();
+        mobileUploadBtn.textContent = 'Upload your Excel file';
         showError(verifyData.message || 'This file could not be verified. Please check it and try again.');
         return;
       }
@@ -1397,6 +1406,7 @@ South Wales.</p>
 
       if (priceData.status !== 'success') {
         hidePopups();
+        mobileUploadBtn.textContent = 'Upload your Excel file';
         showError(priceData.message || 'Could not estimate pricing for this file. Please try again.');
         storedAs = null;
         return;
@@ -1429,6 +1439,7 @@ South Wales.</p>
       checkReady();
     } catch (err) {
       hidePopups();
+      mobileUploadBtn.textContent = 'Upload your Excel file';
       showError('Could not connect to the server. Please check your connection and try again.');
       storedAs = null;
     }
@@ -1535,6 +1546,7 @@ South Wales.</p>
     filePill.style.display = 'none';
     dropzone.style.display = '';
     mobileUploadBtn.style.display = '';
+    mobileUploadBtn.textContent = 'Upload your Excel file';
     summary.style.display = 'none';
     fileInput.value = '';
     checkReady();
@@ -1848,6 +1860,7 @@ export function buildHealthCheckPage(
 
   function wireIdleState() {
     stopCookingDots();
+    mobileUploadBtn.textContent = 'Upload your Excel file';
     dropzone.innerHTML = IDLE_HTML;
     const browseBtn = dropzone.querySelector('.subform-browse') as HTMLButtonElement;
     dropzone.addEventListener('click', onDropzoneClick);
@@ -1865,6 +1878,7 @@ export function buildHealthCheckPage(
     // animation from frame zero each time, so it visually never got past
     // its first fraction of a cycle -- looking "stuck"/erratic rather
     // than actually playing.
+    mobileUploadBtn.textContent = `Uploading... ${percent}%`;
     const percentEl = dropzone.querySelector('.healthcheck-uploading-percent') as HTMLElement | null;
     if (percentEl) {
       percentEl.textContent = `${percent}%`;
@@ -1902,6 +1916,7 @@ export function buildHealthCheckPage(
   }
 
   function renderCooking() {
+    mobileUploadBtn.textContent = 'Cooking...';
     dropzone.innerHTML = `
       <img src="/cauldron-loader.svg" width="84" height="84" alt="" />
       <span class="healthcheck-loading-label">Cooking<span class="popup-loading-dots"></span></span>
@@ -1961,6 +1976,7 @@ export function buildHealthCheckPage(
     verifiedStoredAs = null;
     verifiedPriceData = null;
     fileInput.value = '';
+    mobileUploadBtn.textContent = 'Upload your Excel file';
     wireIdleState();
     if (notify) onFileCleared?.();
   }
