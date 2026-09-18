@@ -2004,7 +2004,13 @@ export function buildHealthCheckPage(
       bandModerateEl.textContent = String(priceData.fscoreDist.Moderate);
       bandHighEl.textContent = String(priceData.fscoreDist.High);
       bandVeryHighEl.textContent = String(priceData.fscoreDist.Critical);
-      priceTotalEl.textContent = formatDollars(priceData.priceTotal);
+      // Match Submission Form's exact grand-total calculation
+      // (10% GST added, $10 minimum charge floor) so the number shown
+      // here is never different from what the Summary panel shows
+      // immediately after handing off to Submission Form.
+      const hcGst = Math.round(priceData.priceTotal * 0.1);
+      const hcGrandTotal = Math.max(10, priceData.priceTotal + hcGst);
+      priceTotalEl.textContent = formatDollars(hcGrandTotal);
       breakdownEl.style.display = '';
       submitBtn.disabled = false;
 
