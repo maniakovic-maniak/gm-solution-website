@@ -600,7 +600,7 @@ section[data-section] {
   display: inline-block;
   background: #F5F4EF;
   color: #16171A;
-  padding: 15px;
+  padding: 5px;
 }
 
 .section-sub--emphasis {
