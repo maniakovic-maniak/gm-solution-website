@@ -59,6 +59,39 @@ function setupOne(container: HTMLElement) {
 
   prevBtn?.addEventListener('click', () => goTo(state, state.index - 1));
   nextBtn?.addEventListener('click', () => goTo(state, state.index + 1));
+
+  // Horizontal swipe, alongside the existing arrows (not replacing them).
+  // Only commits to a slide change on a clearly horizontal gesture that
+  // crosses a real distance threshold -- and only then calls
+  // preventDefault, so an ordinary vertical swipe (the page's own
+  // scroll-jacking gesture) passes through untouched rather than getting
+  // eaten by this card.
+  const SWIPE_THRESHOLD_PX = 40;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchIsHorizontal = false;
+
+  track.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchIsHorizontal = false;
+  }, { passive: true });
+
+  track.addEventListener('touchmove', (e) => {
+    const deltaX = e.touches[0].clientX - touchStartX;
+    const deltaY = e.touches[0].clientY - touchStartY;
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      touchIsHorizontal = true;
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  track.addEventListener('touchend', (e) => {
+    if (!touchIsHorizontal) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) return;
+    goTo(state, deltaX < 0 ? state.index + 1 : state.index - 1);
+  });
 }
 
 export function setupMiniCarousels() {

@@ -3,8 +3,15 @@ import { Observer } from 'gsap/Observer';
 
 gsap.registerPlugin(Observer);
 
-const SENSITIVITY = 0.00055;
-const RELEASE_THRESHOLD = 80; // accumulated input needed to break a lock -- higher than before so
+// Touch-primary devices (phones/tablets) get meaningfully lower
+// thresholds -- the same swipe distance that barely registers on a
+// trackpad's wheel-delta scale is a full, deliberate gesture on a phone,
+// so requiring the same distance as desktop made mobile scrolling feel
+// like it needed an unreasonably long swipe per screen.
+const IS_TOUCH_PRIMARY = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+
+const SENSITIVITY = IS_TOUCH_PRIMARY ? 0.0016 : 0.00055;
+const RELEASE_THRESHOLD = IS_TOUCH_PRIMARY ? 24 : 80; // accumulated input needed to break a lock -- higher than before so
                                 // a few leftover decaying-momentum events can't trigger it alone
 const MAX_STEP_PER_EVENT_FRACTION = 1.0; // clamp: a single wheel event can move at most one full slot-step
 // Fixed, short cooldown after locking -- just long enough to eat the

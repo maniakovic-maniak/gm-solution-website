@@ -192,7 +192,7 @@ export function buildSubmissionFormPage(onFileCleared?: () => void): SubmissionF
 
       <div class="subform-tcs-row">
         <input type="checkbox" id="sub-tcs" />
-        <label for="sub-tcs">I agree on <a class="subform-tcs-link">Terms &amp; Conditions</a></label>
+        <label for="sub-tcs">I agree on <a class="subform-tcs-link">Terms &amp; Conditions</a> and <a class="subform-privacy-link">Privacy Policy</a></label>
       </div>
     </div>
 
@@ -1255,6 +1255,34 @@ South Wales.</p>
   `;
   document.body.appendChild(tcsPopup);
 
+  // Placeholder content -- real Privacy Policy legal text to be supplied
+  // and dropped in here later, matching the same card/header/body
+  // structure as the T&Cs popup for visual consistency.
+  const privacyPopup = document.createElement('div');
+  privacyPopup.className = 'popup-overlay';
+  privacyPopup.innerHTML = `
+    <div class="tcs-popup-card">
+      <div class="tcs-popup-header">
+        <span class="tcs-popup-header__title">Privacy Policy</span>
+        <button class="popup-close tcs-popup-header__close" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div class="tcs-popup-body">
+        <p>Placeholder - full Privacy Policy text to come.</p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(privacyPopup);
+  const privacyLink = page.querySelector('.subform-privacy-link') as HTMLElement;
+  const privacyCloseBtn = privacyPopup.querySelector('.popup-close') as HTMLButtonElement;
+  privacyLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    showPopup(privacyPopup);
+  });
+  privacyCloseBtn.addEventListener('click', () => privacyPopup.classList.remove('show'));
+  privacyPopup.addEventListener('click', (e) => {
+    if (e.target === privacyPopup) privacyPopup.classList.remove('show');
+  });
+
   let loadingDotsTimer: ReturnType<typeof setInterval> | null = null;
   function startLoadingDots() {
     const dotsEl = loadingPopup.querySelector('.popup-loading-dots') as HTMLElement;
@@ -1281,13 +1309,13 @@ South Wales.</p>
   }
 
   function showPopup(el: HTMLElement) {
-    [loadingPopup, errorPopup, tcsPopup].forEach((p) => p.classList.remove('show'));
+    [loadingPopup, errorPopup, tcsPopup, privacyPopup].forEach((p) => p.classList.remove('show'));
     el.classList.add('show');
     stopLoadingDots();
     if (el === loadingPopup) startLoadingDots();
   }
   function hidePopups() {
-    [loadingPopup, errorPopup, tcsPopup].forEach((p) => p.classList.remove('show'));
+    [loadingPopup, errorPopup, tcsPopup, privacyPopup].forEach((p) => p.classList.remove('show'));
     stopLoadingDots();
     setLoadingPercent(null);
   }

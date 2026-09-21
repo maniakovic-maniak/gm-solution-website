@@ -27,7 +27,7 @@ export function setupDemoModal(): DemoModal {
       <div class="demo-tabs">
         <button class="demo-tab is-active" type="button" data-index="0">Submission Form</button>
         <button class="demo-tab demo-tab--healthcheck" type="button" data-index="1">Model Health-Check<span class="demo-tab__badge">Free</span></button>
-        <button class="demo-tab-link" type="button" data-index="2">or Request a Demo</button>
+        <button class="demo-tab-link" type="button" data-index="2">Request a Demo</button>
       </div>
 
       <div class="demo-track-viewport">
