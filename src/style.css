@@ -284,7 +284,10 @@ section[data-section] {
 }
 
 .site-nav__mobile-footer {
-  margin-top: auto;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
   font-size: 0.7rem;
   color: #6b7280;
