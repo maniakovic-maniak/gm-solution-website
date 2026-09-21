@@ -596,6 +596,13 @@ section[data-section] {
   margin-bottom: 0.75rem;
 }
 
+.eyebrow--ribbon {
+  display: inline-block;
+  background: #F5F4EF;
+  color: #16171A;
+  padding: 15px;
+}
+
 .section-sub--emphasis {
   font-style: italic;
 }
@@ -613,6 +620,10 @@ section[data-section] {
 
   .eyebrow {
     margin-bottom: 1.25rem;
+  }
+
+  .eyebrow--ribbon {
+    font-size: 0.75rem;
   }
 
   .section-sub {
