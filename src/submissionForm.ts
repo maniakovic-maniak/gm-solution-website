@@ -1267,7 +1267,144 @@ South Wales.</p>
         <button class="popup-close tcs-popup-header__close" type="button" aria-label="Close">&times;</button>
       </div>
       <div class="tcs-popup-body">
-        <p>Placeholder - full Privacy Policy text to come.</p>
+        <p>This Privacy Policy explains how we handle personal information in connection with the PLS FX service (the Service) and our website. It forms part of, and is incorporated by, our Terms and Conditions (the T&Cs). Capitalised terms used but not defined in this Privacy Policy have the meaning given to them in the T&Cs. If there is any inconsistency between this Privacy Policy and the T&Cs in relation to personal information, this Privacy Policy prevails to the extent of the inconsistency (see clause 13.7 of the T&Cs). This is effective as of September 15, 2026.</p>
+<h2>1. Who we are, and the scope of this Policy</h2>
+<p><strong>1.1</strong> This Privacy Policy explains how PLS FX (we, us or our, being the Supplier under the T&Cs) collects, holds, uses, discloses and otherwise handles personal information in connection with the PLS FX service (the Service) and our website.</p>
+<p><strong>1.2</strong> We are bound by the Privacy Act 1988 (Cth) (the Privacy Act) and the Australian Privacy Principles in Schedule 1 to the Privacy Act (the APPs). Personal information has the meaning given in the Privacy Act.</p>
+<p><strong>1.3</strong> This Privacy Policy applies to: (a) visitors to and users of our website; and (b) the Customer, its Authorised Users, and any individual whose personal information is handled in connection with the Service, including personal information contained within Customer Content.</p>
+<p><strong>1.4</strong> We use the following terms with the same meaning as in the T&Cs:</p>
+<blockquote>
+<p>(a) Customer: the business or professional entity that accepts the T&Cs and uses the Service;</p>
+<p>(b) Authorised User: an individual the Customer permits to use the Service under its account;</p>
+<p>(c) Customer Content: the Excel financial model and any other material a Customer or Authorised User submits to or through the Service;</p>
+<p>(d) Output: the findings report and other results the Service generates and returns;</p>
+<p>(e) Subprocessor: a third party we engage to host, store, process, secure or support the Service, including providers of automated and machine-assisted processing;</p>
+<p>(f) Security Contact: the contact the Customer nominates under clause 13.13 of the T&Cs; and</p>
+<p>(g) Approved Channel: the upload and messaging facilities we make available within the Service.</p>
+</blockquote>
+<p><strong>1.5</strong> The Service is a paid, automated, machine-assisted service: a Customer or Authorised User uploads an Excel financial model as Customer Content, the Service performs automated and machine-assisted processing, and it returns a findings report as Output. The Service is not a human expert review, and is not an audit, assurance engagement, or professional, financial or legal advice.</p>
+<h2>2. The personal information we collect and hold</h2>
+<p><strong>2.1</strong> We collect and hold the following categories of personal information:</p>
+<blockquote>
+<p>(a) Account and billing information; the name, business email address, telephone number, job title and organisation of Authorised Users and account administrators, login credentials, and billing and transaction records. Payment card details are collected and processed by our payment Subprocessor and are not stored in full by us (see clauses 3 and 6);</p>
+<p>(b) Personal information contained within Customer Content; a Customer may choose to include personal information within an uploaded model (for example, employee names, salaries or remuneration, counterparty names, and contact details). We do not require Customer Content to contain personal information, and we ask Customers to minimise and, where practicable, mask, redact or de-identify it before uploading. The Customer decides what personal information (if any) it includes;</p>
+<p>(c) Website and technical data; cookies and similar technologies, server and access logs, IP address, device and browser information, and usage and analytics data (see clauses 3 and 13); and</p>
+<p>(d) Support communications; information you provide when you contact us for support, make an enquiry, or exercise a privacy right, including the content of your correspondence.</p>
+</blockquote>
+<p><strong>2.2</strong> We do not seek to collect sensitive information (as defined in the Privacy Act) through the Service, and we ask Customers not to include it in Customer Content. If a Customer includes sensitive information within Customer Content, the Customer is responsible for ensuring it has any consent required under the Privacy Act (see clauses 4 and 6, and clauses 8.3 and 13.8 of the T&Cs).</p>
+<p><strong>2.3</strong> Responsibility for Customer Content. As between us and the Customer, the Customer is responsible for the personal information it chooses to upload as Customer Content, and for giving any collection notices to, and obtaining any consents from, the individuals concerned as required by the Privacy Act (consistent with clauses 8.3 and 13.8 of the T&Cs). We handle personal information contained in Customer Content on the Customer's behalf and in accordance with the T&Cs and this Privacy Policy.</p>
+<h2>3. How we collect personal information</h2>
+<p><strong>3.1</strong> We collect personal information:</p>
+<blockquote>
+<p>(a) directly from you when you register for or administer an account, communicate with us, request support, or otherwise interact with us;</p>
+<p>(b) through the Service when a Customer or Authorised User uploads or inputs Customer Content, and through the operation, logging and monitoring of the Service;</p>
+<p>(c) via our payment Subprocessor which collects payment information from you to process payments and returns limited transaction data to us; and</p>
+<p>(d) via cookies and analytics when you use our website (see clauses 2 and 13).</p>
+</blockquote>
+<p><strong>3.2</strong> Where it is reasonable and practicable, we collect personal information directly from the individual. Personal information contained in Customer Content is ordinarily provided to us by the Customer rather than collected directly from the individual concerned, and the notice and consent responsibilities in clause 2.3 apply.</p>
+<h2>4. Why we collect, use and disclose personal information</h2>
+<p><strong>4.1</strong> Primary purposes. Consistent with APP 6, we collect, hold, use and disclose personal information to:</p>
+<blockquote>
+<p>(a) provide the Service, including performing the automated and machine-assisted processing of Customer Content;</p>
+<p>(b) generate and return the Output to the Customer;</p>
+<p>(c) operate, maintain, secure, troubleshoot, support and improve the Service and our website;</p>
+<p>(d) create and administer accounts and manage our relationship with the Customer and Authorised Users;</p>
+<p>(e) process payments and manage billing; and</p>
+<p>(f) comply with our legal obligations and establish, exercise or defend legal rights.</p>
+</blockquote>
+<p><strong>4.2</strong> Secondary purposes. We will use or disclose personal information for a purpose other than the primary purpose only where the individual has consented; the secondary purpose is related to the primary purpose (or, for sensitive information, directly related) and is within the individual's reasonable expectations; the use or disclosure is required or authorised by or under an Australian law or a court or tribunal order; or another APP exception applies.</p>
+<p><strong>4.3 No training of general or shared models.</strong> Consistent with clause 13.5 of the T&Cs, we do not use Customer Content to train, fine-tune or improve any general-purpose or shared machine-learning model, and we contractually require our Subprocessors that perform automated and machine-assisted processing not to do so. Customer Content is processed only to deliver the Service to the Customer.</p>
+<p><strong>4.4</strong> We do not sell personal information, and we do not use personal information contained in Customer Content for our own marketing.</p>
+<h2>5. Automated and machine-assisted processing</h2>
+<p><strong>5.1 How the Service works.</strong> The Service is automated. When Customer Content is uploaded, the Service applies automated and machine-assisted processing to analyse the Excel financial model and produce the Output. The Service is not a human expert review; no human expert reviews or verifies the model as part of delivering the Output. The Output is generated to assist the Customer's own assessment of its model, and the Customer is responsible for how it interprets and uses the Output.</p>
+<p><strong>5.2</strong> Third-party processing provider. Our automated and machine-assisted processing uses a third-party provider (a Subprocessor). The categories of Subprocessors, their functions and the countries in which they operate are set out in the table in clause 6, and overseas processing is addressed in clause 7.</p>
+<p><strong>5.3</strong> Kinds of personal information used. The personal information used in the operation of the Service's automated and machine-assisted processing is the personal information (if any) the Customer chooses to include within Customer Content, for example, employee names, salaries or remuneration, counterparty names, and contact details, together with account and technical data used to operate and secure the Service.</p>
+<p><strong>5.4</strong> Automated decision-making transparency. In the interests of transparency, and in readiness for the automated decision-making disclosure requirement under APP 1 (as amended by the Privacy and Other Legislation Amendment Act 2024 (Cth), commencing 10 December 2026), we confirm that:</p>
+<blockquote>
+<p>(a) the Service uses computer programs, including a third-party machine-assisted processing provider, to analyse an Excel financial model supplied by the Customer and to generate the Output;</p>
+<p>(b) the kinds of personal information used in the operation of those programs are described in clause 5.3; and</p>
+<p>(c) the Service does not make, and is not substantially and directly related to making, any decision about an individual that could reasonably be expected to significantly affect that individual's rights or interests. The Service analyses a financial model for the Customer's own assessment; we do not use it to make decisions about the individuals whose personal information may appear in Customer Content (for example, decisions about a person's employment, finances, entitlements or standing). Any decision a Customer makes using the Output is the Customer's own decision, made outside the Service.</p>
+</blockquote>
+<p><strong>5.5</strong> If we change the Service so that it does make, or becomes substantially and directly related to making, decisions of the kind described in clause 5.4(c), we will update this Privacy Policy to set out the kinds of personal information used and the kinds of decisions concerned, consistent with the amended APP 1.</p>
+<h2>6. Disclosure to third parties and Subprocessors</h2>
+<p><strong>6.1</strong> We disclose personal information to the following categories of recipients:</p>
+<blockquote>
+<p>(a) Subprocessors that host, store, process, secure or support the Service, including providers of automated and machine-assisted processing, cloud hosting and storage, and payment processing;</p>
+<p>(b) our professional advisers (such as legal, accounting and audit advisers) on a confidential basis;</p>
+<p>(c) government agencies, regulators, courts or law-enforcement bodies where required or authorised by law; and</p>
+<p>(d) a successor entity in connection with a sale, merger or reorganisation of our business, subject to appropriate confidentiality and privacy protections.</p>
+</blockquote>
+<p><strong>6.2</strong> We require our Subprocessors, by contract, to protect personal information to a standard consistent with the Privacy Act and the APPs, to use it only to provide their services to us, and not to use Customer Content to train, fine-tune or improve any general-purpose or shared machine-learning model (see clauses 4.3 and 8).</p>
+<p><strong>6.3</strong> Current Subprocessor list. Consistent with clause 13.2 of the T&Cs (which provides that the current Subprocessor list is made available through this Privacy Policy), the following table sets out our current Subprocessors, their functions, and the countries in which they process or store personal information, including those outside Australia. We may update this list from time to time in accordance with the T&Cs and clause 15.</p>
+<table class="tcs-popup-body__table">
+<thead><tr><th>Function</th><th>Country</th></tr></thead>
+<tbody>
+<tr><td>Automated and machine-assisted processing</td><td>United States</td></tr>
+<tr><td>Cloud hosting and storage</td><td>Australia (Sydney)</td></tr>
+<tr><td>Payment processing</td><td>Australia</td></tr>
+</tbody>
+</table>
+<p><strong>6.4</strong> The countries listed above are subject to change if we change or add Subprocessors. Overseas disclosures are addressed in clause 7.</p>
+<h2>7. Overseas disclosure (APP 8 and section 16C)</h2>
+<p><strong>7.1</strong> We disclose personal information to recipients located outside Australia. As shown in the table in clause 6, this currently includes disclosure to a recipient in the United States for automated and machine-assisted processing, and may include other countries where our payment or other Subprocessors are located.</p>
+<p><strong>7.2</strong> We do not represent, and you should not assume, that personal information handled in connection with the Service remains in Australia at all times. Personal information may be processed, transmitted to or stored in countries other than Australia, including the United States. Any earlier or contrary statement that data does not leave Australia does not apply to the Service.</p>
+<p><strong>7.3</strong> Before disclosing personal information to an overseas recipient, we take such steps as are reasonable in the circumstances, consistent with APP 8, to ensure the overseas recipient does not breach the APPs in relation to that information. These steps include entering into contractual arrangements requiring our Subprocessors to handle personal information consistently with the Privacy Act and the APPs (see clauses 6.2 and 8).</p>
+<p><strong>7.4</strong> You acknowledge that, under section 16C of the Privacy Act, where APP 8.1 applies to a disclosure by us to an overseas recipient, an act done by that recipient that would breach the APPs is taken to have been done by us and to be a breach of the APPs by us. This reflects clause 20.2 of the T&Cs.</p>
+<h2>8. Security of personal information (APP 11)</h2>
+<p><strong>8.1</strong> Consistent with clause 13.9 of the T&Cs and with APP 11, we take reasonable steps to protect personal information we hold from misuse, interference and loss, and from unauthorised access, modification or disclosure. Those steps include:</p>
+<blockquote>
+<p>(a) encryption of personal information in transit and at rest;</p>
+<p>(b) access controls and least-privilege access, so that access to Customer Content and other personal information is limited to personnel and Subprocessors who need it to operate, secure or support the Service;</p>
+<p>(c) contractual flow-down of security and privacy obligations to Subprocessors, including the requirement not to use Customer Content to train, fine-tune or improve any general-purpose or shared machine-learning model (see clauses 4.3 and 6.2);</p>
+<p>(d) logging and monitoring of access to and use of the Service to detect and respond to security events; and</p>
+<p>(e) organisational measures, including staff confidentiality obligations and security governance.</p>
+</blockquote>
+<p><strong>8.2</strong> No method of transmission or storage is completely secure. While we take reasonable steps to protect personal information, we cannot guarantee absolute security. We maintain the incident-response and breach-cooperation arrangements described in clause 10.</p>
+<h2>9. Retention, destruction and de-identification (APP 11.2)</h2>
+<p><strong>9.1</strong> Consistent with clause 13.10 of the T&Cs and with APP 11.2, we retain personal information only for as long as it is reasonably necessary for the purposes set out in clause 4, or as required by law.</p>
+<p><strong>9.2</strong> Customer Content is retained for the period necessary to provide the Service and deliver the Output, and thereafter as set out in the T&Cs. When personal information is no longer needed for any purpose for which it may be used or disclosed, and we are not required by law or a court or tribunal order to retain it, we take reasonable steps to destroy or de-identify it, including copies held in backups on a rolling basis as backups cycle and expire.</p>
+<p><strong>9.3</strong> Legal hold. We may retain personal information for longer where it is subject to a legal hold, is required or authorised to be retained by law, or is reasonably necessary for the establishment, exercise or defence of a legal claim, for the duration of that requirement or claim.</p>
+<h2>10. Data breaches</h2>
+<p><strong>10.1</strong> We maintain an incident-response process to identify, assess, contain and remediate security incidents affecting personal information. This clause reflects clauses 13.11 to 13.13 of the T&Cs.</p>
+<p><strong>10.2</strong> Notification to the Customer. If we become aware of a security incident affecting Customer Content or other personal information we hold on the Customer's behalf, we will notify the Customer's Security Contact without undue delay through an Approved Channel, and will provide reasonable information to help the Customer assess the incident and meet its obligations. The Customer is responsible for keeping its Security Contact details current.</p>
+<p><strong>10.3</strong> Roles under the Notifiable Data Breaches scheme (Part IIIC of the Privacy Act). As between us and the Customer:</p>
+<blockquote>
+<p>(a) the Customer is responsible for the personal information it controls within Customer Content, and for assessing whether an eligible data breach has occurred in respect of that information and making any notifications to the Office of the Australian Information Commissioner (OAIC) and affected individuals that the scheme requires; and</p>
+<p>(b) we will cooperate with and assist the Customer in its assessment and response, including by providing information reasonably required, and we will meet our own obligations under the Privacy Act for personal information for which we are the responsible entity.</p>
+</blockquote>
+<p><strong>10.4</strong> Where an eligible data breach involves both us and the Customer (or other entities), we may coordinate a single assessment and, where permitted, a single notification, consistent with the scheme. Security matters may be raised with us at security@gmail.com.</p>
+<h2>11. Access and correction (APP 12 and APP 13)</h2>
+<p><strong>11.1</strong> Access. You may request access to the personal information we hold about you by contacting our Privacy Officer (see clause 16). We will respond within a reasonable period and, where we are able to give access, will do so in the manner requested if reasonable and practicable.</p>
+<p><strong>11.2</strong> Correction. If you believe personal information we hold about you is inaccurate, out of date, incomplete, irrelevant or misleading, you may ask us to correct it. We will take reasonable steps to correct it having regard to the purpose for which it is held, and will respond within a reasonable period.</p>
+<p><strong>11.3</strong> Personal information within Customer Content. Where a request relates to personal information contained within Customer Content that we hold on a Customer's behalf, we may need to refer the request to the relevant Customer, which controls that information (see clause 2.3), and we will assist the Customer to respond as appropriate.</p>
+<p><strong>11.4</strong> Refusal. We may decline an access or correction request where the Privacy Act permits (for example, where giving access would unreasonably affect the privacy of others, or where the request is frivolous or vexatious). If we refuse, we will give written reasons (except where unreasonable to do so) and explain how to complain, and, for a refused correction, will if asked take reasonable steps to associate a statement with the information noting your view.</p>
+<p><strong>11.5</strong> We do not charge for making a request. We may charge a reasonable, non-excessive fee for giving access where the Privacy Act permits; we do not charge for making a correction or associating a statement.</p>
+<h2>12. Complaints</h2>
+<p><strong>12.1</strong> If you have a complaint about how we have handled your personal information, please contact our Privacy Officer (see clause 16) with the details.</p>
+<p><strong>12.2</strong> We will acknowledge your complaint, investigate it, and respond within a reasonable period. We may ask you for further information to help us investigate.</p>
+<p><strong>12.3</strong> If you are not satisfied with our response, or consider we have breached the Privacy Act or the APPs, you may complain to the Office of the Australian Information Commissioner (OAIC):</p>
+<blockquote>
+<p>(a) Online: www.oaic.gov.au (privacy complaint form);</p>
+<p>(b) Phone: 1300 363 992; and</p>
+<p>(c) Post: Director of Complaints, Office of the Australian Information Commissioner, GPO Box 5288, Sydney NSW 2001.</p>
+</blockquote>
+<p><strong>12.4</strong> The OAIC will generally expect you to have raised your complaint with us first.</p>
+<h2>13. Cookies and analytics</h2>
+<p><strong>13.1</strong> Our website uses cookies and similar technologies, including cookies necessary for the website and the Service to function (such as session and authentication cookies), and analytics cookies that help us understand how the website and the Service are used so we can operate, secure and improve them.</p>
+<p><strong>13.2</strong> You can control or disable cookies through your browser settings; if you disable certain cookies, some features may not function properly. Where we use analytics providers, they act as our Subprocessors and are subject to the obligations described in clauses 6 and 8.</p>
+<h2>14. Children</h2>
+<p><strong>14.1</strong> The Service is intended for business and professional users who are at least 18 years of age. It is not directed to children, and we do not knowingly collect personal information from children. If you believe we have inadvertently collected a child's personal information, please contact our Privacy Officer (see clause 16) and we will take reasonable steps to delete it.</p>
+<h2>15. Changes to this Privacy Policy</h2>
+<p><strong>15.1</strong> We may update this Privacy Policy from time to time, including to reflect changes to the Service, our Subprocessors or the law. Each version is identified by a version number and effective date (see the introduction above).</p>
+<p><strong>15.2</strong> We will publish the current version on our website. Where a change is material, we will take reasonable steps to notify Customers through an Approved Channel or otherwise as required by the T&Cs. Your continued use of the Service after the effective date of an updated Privacy Policy constitutes acceptance of it, to the extent permitted by law.</p>
+<h2>16. How to contact us / our Privacy Officer</h2>
+<p><strong>16.1</strong> Questions, requests and complaints about this Privacy Policy or our handling of personal information can be directed to our Privacy Officer:</p>
+<blockquote>
+<p>(a) Email: privacy@gmail.com;</p>
+<p>(b) Post: Privacy Officer, PLS FX; and</p>
+<p>(c) Security matters: security@gmail.com (see clause 10).</p>
+</blockquote>
+<p><strong>16.2</strong> This Privacy Policy is governed by the laws of New South Wales, Australia, consistent with the T&Cs.</p>
       </div>
     </div>
   `;

@@ -283,6 +283,14 @@ section[data-section] {
   color: #3d8b85;
 }
 
+.site-nav__mobile-footer {
+  margin-top: auto;
+  padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-align: center;
+}
+
 /* Breakpoint: swap desktop links for hamburger below 768px */
 @media (max-width: 768px) {
   .site-nav__links {
@@ -600,7 +608,7 @@ section[data-section] {
   display: inline-block;
   background: #F5F4EF;
   color: #16171A;
-  padding: 5px;
+  padding: 3px;
 }
 
 .section-sub--emphasis {
@@ -1075,6 +1083,9 @@ section[data-section] {
 .tcs-popup-body p { margin-bottom: 0.9rem; }
 .tcs-popup-body h2 { font-size: 0.95rem; font-weight: 700; color: #16171A; margin: 1.6rem 0 0.7rem; }
 .tcs-popup-body h2:first-child { margin-top: 0; }
+.tcs-popup-body__table { width: 100%; border-collapse: collapse; margin: 0.9rem 0; font-size: 0.8rem; }
+.tcs-popup-body__table th { background: #3d8b85; color: #F5F4EF; padding: 0.5rem 0.7rem; text-align: left; font-weight: 700; }
+.tcs-popup-body__table td { padding: 0.5rem 0.7rem; border-bottom: 1px solid rgba(22, 23, 26, 0.08); }
 .tcs-popup-body ul { margin: 0 0 0.9rem 1.3rem; padding: 0; }
 .tcs-popup-body li { margin-bottom: 0.5rem; }
 .tcs-popup-body li p { margin-bottom: 0.3rem; }

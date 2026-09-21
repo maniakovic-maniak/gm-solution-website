@@ -82,6 +82,11 @@ export function setupNav(controls: ScrollEngineControls) {
     mobileLinks.push(btn);
   });
 
+  const mobileFooter = document.createElement('p');
+  mobileFooter.className = 'site-nav__mobile-footer';
+  mobileFooter.textContent = '\u00A9 Copyright 2026 BIRDHOUSE TRADING PTY LTD. All rights reserved / ABN 61692125616';
+  mobileMenu.appendChild(mobileFooter);
+
   document.body.appendChild(mobileMenu);
 
   let isOpen = false;
