@@ -99,7 +99,14 @@ export function setupScrollEngine(
     ignore: '.demo-modal-backdrop',
     onChange: (self) => {
       if (document.body.classList.contains('modal-open')) return;
-      const rawDelta = self.deltaY;
+      // Negated so swipe-up advances and swipe-down goes back -- the
+      // common "natural scroll" convention -- reversing the site's
+      // original swipe-down-to-advance behavior. Every downstream use of
+      // rawDelta (the noise floor, the release-lock accumulator, the
+      // movement/direction calc, and the boundary checks below) reads
+      // this same already-inverted value, so the reversal is consistent
+      // throughout rather than needing separate fixes in each place.
+      const rawDelta = -self.deltaY;
       if (Math.abs(rawDelta) < DELTA_NOISE_FLOOR) return;
 
       if (locked) {
@@ -114,7 +121,7 @@ export function setupScrollEngine(
           const now = Date.now();
           if (now - lastBoundaryHintAt > BOUNDARY_HINT_COOLDOWN_MS) {
             lastBoundaryHintAt = now;
-            onBoundaryAttempt(atStart ? 'down' : 'up');
+            onBoundaryAttempt(atStart ? 'up' : 'down');
           }
         }
 

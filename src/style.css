@@ -1058,7 +1058,7 @@ section[data-section] {
   padding: 1.3rem 2rem;
   border-bottom: 1px solid rgba(22, 23, 26, 0.1);
 }
-.tcs-popup-header__title { font-weight: 700; font-size: 1rem; }
+.tcs-popup-header__title { font-weight: 700; font-size: 1rem; color: #16171A; }
 .tcs-popup-header__close { position: static; flex-shrink: 0; }
 .tcs-popup-body { padding: 1.3rem 2rem 2rem; overflow-y: auto; font-size: 0.82rem; color: #5F5E5A; line-height: 1.65; }
 .tcs-popup-body p { margin-bottom: 0.9rem; }
