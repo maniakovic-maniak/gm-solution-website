@@ -641,6 +641,7 @@ section[data-section] {
 .mini-track {
   display: flex;
   width: 100%;
+  transition: transform 0.3s ease;
 }
 
 .mini-card {
@@ -945,7 +946,7 @@ section[data-section] {
 
 /* T&Cs + submit */
 .subform-tcs-row { display: flex; align-items: center; gap: 0.5rem; margin: 1.1rem 0 1rem; font-size: 0.78rem; }
-.subform-tcs-link { color: #185fa5; text-decoration: underline; cursor: pointer; }
+.subform-tcs-link, .subform-privacy-link { color: #185fa5; text-decoration: underline; cursor: pointer; }
 .subform-footer { padding-top: 0.25rem; }
 .subform-submit {
   width: 100%;

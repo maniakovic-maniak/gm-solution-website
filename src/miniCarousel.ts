@@ -61,36 +61,51 @@ function setupOne(container: HTMLElement) {
   nextBtn?.addEventListener('click', () => goTo(state, state.index + 1));
 
   // Horizontal swipe, alongside the existing arrows (not replacing them).
-  // Only commits to a slide change on a clearly horizontal gesture that
-  // crosses a real distance threshold -- and only then calls
-  // preventDefault, so an ordinary vertical swipe (the page's own
-  // scroll-jacking gesture) passes through untouched rather than getting
-  // eaten by this card.
-  const SWIPE_THRESHOLD_PX = 40;
+  // Live-follows the finger during the drag (transition disabled so it
+  // tracks 1:1 with zero lag), then snaps to whichever card is nearest
+  // once released, with the transition re-enabled for a smooth glide --
+  // rather than only reacting on release, which looked like an abrupt
+  // page change instead of an actual drag.
+  const SWIPE_COMMIT_FRACTION = 0.2; // drag past 20% of the card's width to commit to changing slides
   let touchStartX = 0;
   let touchStartY = 0;
   let touchIsHorizontal = false;
+  let touchIsTracking = false;
+  let liveDeltaX = 0;
 
   track.addEventListener('touchstart', (e) => {
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
     touchIsHorizontal = false;
+    touchIsTracking = false;
+    liveDeltaX = 0;
   }, { passive: true });
 
   track.addEventListener('touchmove', (e) => {
     const deltaX = e.touches[0].clientX - touchStartX;
     const deltaY = e.touches[0].clientY - touchStartY;
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (!touchIsHorizontal && !touchIsTracking) {
+      if (Math.abs(deltaX) <= Math.abs(deltaY)) return;
       touchIsHorizontal = true;
-      e.preventDefault();
+      touchIsTracking = true;
+      track.style.transition = 'none';
     }
+    if (!touchIsTracking) return;
+    e.preventDefault();
+    liveDeltaX = deltaX;
+    track.style.transform = `translateX(calc(-${state.index * 100}% + ${deltaX}px))`;
   }, { passive: false });
 
-  track.addEventListener('touchend', (e) => {
-    if (!touchIsHorizontal) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) return;
-    goTo(state, deltaX < 0 ? state.index + 1 : state.index - 1);
+  track.addEventListener('touchend', () => {
+    if (!touchIsTracking) return;
+    track.style.transition = '';
+    const commitDistance = container.clientWidth * SWIPE_COMMIT_FRACTION;
+    if (Math.abs(liveDeltaX) > commitDistance) {
+      goTo(state, liveDeltaX < 0 ? state.index + 1 : state.index - 1);
+    } else {
+      goTo(state, state.index); // snap back to the current card
+    }
+    touchIsTracking = false;
   });
 }
 
