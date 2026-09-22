@@ -1372,7 +1372,7 @@ South Wales.</p>
 <p>(a) the Customer is responsible for the personal information it controls within Customer Content, and for assessing whether an eligible data breach has occurred in respect of that information and making any notifications to the Office of the Australian Information Commissioner (OAIC) and affected individuals that the scheme requires; and</p>
 <p>(b) we will cooperate with and assist the Customer in its assessment and response, including by providing information reasonably required, and we will meet our own obligations under the Privacy Act for personal information for which we are the responsible entity.</p>
 </blockquote>
-<p><strong>10.4</strong> Where an eligible data breach involves both us and the Customer (or other entities), we may coordinate a single assessment and, where permitted, a single notification, consistent with the scheme. Security matters may be raised with us at security@gmail.com.</p>
+<p><strong>10.4</strong> Where an eligible data breach involves both us and the Customer (or other entities), we may coordinate a single assessment and, where permitted, a single notification, consistent with the scheme. Security matters may be raised with us at security@plsfx.ai.</p>
 <h2>11. Access and correction (APP 12 and APP 13)</h2>
 <p><strong>11.1</strong> Access. You may request access to the personal information we hold about you by contacting our Privacy Officer (see clause 16). We will respond within a reasonable period and, where we are able to give access, will do so in the manner requested if reasonable and practicable.</p>
 <p><strong>11.2</strong> Correction. If you believe personal information we hold about you is inaccurate, out of date, incomplete, irrelevant or misleading, you may ask us to correct it. We will take reasonable steps to correct it having regard to the purpose for which it is held, and will respond within a reasonable period.</p>
@@ -1400,9 +1400,9 @@ South Wales.</p>
 <h2>16. How to contact us / our Privacy Officer</h2>
 <p><strong>16.1</strong> Questions, requests and complaints about this Privacy Policy or our handling of personal information can be directed to our Privacy Officer:</p>
 <blockquote>
-<p>(a) Email: privacy@gmail.com;</p>
+<p>(a) Email: privacy@plsfx.ai;</p>
 <p>(b) Post: Privacy Officer, PLS FX; and</p>
-<p>(c) Security matters: security@gmail.com (see clause 10).</p>
+<p>(c) Security matters: security@plsfx.ai (see clause 10).</p>
 </blockquote>
 <p><strong>16.2</strong> This Privacy Policy is governed by the laws of New South Wales, Australia, consistent with the T&Cs.</p>
       </div>

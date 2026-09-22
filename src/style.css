@@ -4,6 +4,8 @@ html, body {
   height: 100%;
   overflow: hidden;
   color: #eef1f8;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
   background-color: #05050d;
   background-image:
@@ -612,6 +614,7 @@ section[data-section] {
   background: #F5F4EF;
   color: #16171A;
   padding: 3px;
+  letter-spacing: normal;
 }
 
 .section-sub--emphasis {
